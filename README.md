@@ -15,7 +15,7 @@ Board support is in boards/
 ## Supported Boards
 
 | Name | Status | Description | Link |
-| ---- | ----------- | ---- |
+| ---- | ------ | ----------- | ---- |
 | samd21-xpro | STABLE | Atmel SAM D21 Xplained Pro | https://www.microchip.com/developmenttools/ProductDetails/ATSAMD21-XPRO |
 | m0-mini | BETA | Arduino M0 clones (various) | https://www.aliexpress.com/item/SAMD21-M0-Mini-32-bit-ARM-Cortex-M0-Core-Compatible-with-Arduino-Zero-Form-Mini/32890639630.html |
 | rpi | UNSTABLE | RaspberryPi | https://www.raspberrypi.org/ |
