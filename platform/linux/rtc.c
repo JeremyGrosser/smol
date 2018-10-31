@@ -11,7 +11,7 @@
 
 static struct tm now;
 
-void rtc_init() {
+void rtc_setup() {
 }
 
 struct tm *rtc_read() {
