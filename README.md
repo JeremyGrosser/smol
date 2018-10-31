@@ -20,3 +20,10 @@ Board support is in boards/
 | m0-mini | BETA | Arduino M0 clones (various) | https://www.aliexpress.com/item/SAMD21-M0-Mini-32-bit-ARM-Cortex-M0-Core-Compatible-with-Arduino-Zero-Form-Mini/32890639630.html |
 | rpi | UNSTABLE | RaspberryPi | https://www.raspberrypi.org/ |
 | clock3 | UNSTABLE | My desk clock, ADA3010 with peripherals | https://www.adafruit.com/product/3010 |
+
+## Drivers
+
+| Name | Status | Description | Datasheet |
+| ---- | ------ | ----------- | --------- |
+| ssd1306 | UNSTABLE | OLED display controller | https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf |
+| ht16k33 | STABLE | LED matrix controller | https://cdn-shop.adafruit.com/datasheets/ht16K33v110.pdf |
