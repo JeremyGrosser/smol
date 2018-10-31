@@ -5,7 +5,7 @@ OBJCOPY := objcopy
 OBJDUMP := objdump
 
 CFLAGS += -I$(LOCAL_DIR) \
-          -D_POSIX_C_SOURCE=199209L
+          -D_POSIX_C_SOURCE=199309L
 
 LDFLAGS += -lrt
 
