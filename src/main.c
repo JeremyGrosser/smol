@@ -1,12 +1,8 @@
 #include <platform/gpio.h>
-#include <platform/uart.h>
-#include <platform/i2c.h>
 #include <platform.h>
 #include <board.h>
 
 #include <stdio.h>
-
-#define TMP102_ADDR	0x48
 
 int main(void) {
 	int err;
@@ -17,6 +13,15 @@ int main(void) {
 		return 1;
 	}else{
 		printf("ok!\r\n");
+	}
+
+	gpio_setup(&LED);
+
+	while(1) {
+		gpio_write(&LED, LED_ON);
+		platform_delay(1000);
+		gpio_write(&LED, LED_OFF);
+		platform_delay(1000);
 	}
 
 	return 0;
