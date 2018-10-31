@@ -2,7 +2,7 @@
 #define RTC_H
 #include <sys/time.h>
 
-void rtc_init(void);
+void rtc_setup(void);
 struct tm *rtc_read(void);
 void rtc_write(struct tm *now);
 

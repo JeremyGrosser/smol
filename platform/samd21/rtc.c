@@ -20,7 +20,7 @@ static struct tm rtc_now = {
 // calculate seconds
 //static uint32_t rtc_ticks = 1000;
 
-void rtc_init(void) {
+void rtc_setup(void) {
 	RtcMode2 *hw = &RTC->MODE2;
 
 	/*
