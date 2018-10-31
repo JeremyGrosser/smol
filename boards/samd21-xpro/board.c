@@ -41,6 +41,7 @@ uart_t CONSOLE_UART = {
 	.rxd	= &CONSOLE_RXD,
 	.tx_pad = 0,
 	.rx_pad = 1,
+	.baud	= 115200,
 };
 
 int board_init() {

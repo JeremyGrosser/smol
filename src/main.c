@@ -23,7 +23,7 @@ int main(void) {
 
 	while(1) {
 		if(gettimeofday(&tv, NULL) == 0) {
-			printf("%d.%d\n", (int)tv.tv_sec, (int)tv.tv_usec);
+			printf("%d.%d\r\n", (int)tv.tv_sec, (int)tv.tv_usec);
 		}
 
 		gpio_toggle(&LED);
