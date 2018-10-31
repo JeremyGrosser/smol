@@ -1,6 +1,6 @@
 BUILDDIR ?= $(TOPDIR)/build/$(TARGET)
 
-LDFLAGS += --specs=nosys.specs --specs=nano.specs -Wl,-gc-sections,-Map=$(TARGET).map,--cref
+LDFLAGS += -Wl,-gc-sections,-Map=$(TARGET).map,--cref
 ifneq ($(LDSCRIPT),)
 	LDFLAGS := $(LDFLAGS),-T,$(LDSCRIPT)
 endif
