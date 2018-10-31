@@ -1,4 +1,5 @@
 #include <platform/gpio.h>
+#include <platform/rtc.h>
 #include <platform.h>
 #include <board.h>
 
@@ -18,6 +19,7 @@ int main(void) {
 	}
 
 	gpio_setup(&LED);
+	rtc_setup();
 
 	while(1) {
 		if(gettimeofday(&tv, NULL) == 0) {
