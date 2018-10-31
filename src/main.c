@@ -18,9 +18,7 @@ int main(void) {
 	gpio_setup(&LED);
 
 	while(1) {
-		gpio_write(&LED, LED_ON);
-		platform_delay(1000);
-		gpio_write(&LED, LED_OFF);
+		gpio_toggle(&LED);
 		platform_delay(1000);
 	}
 
