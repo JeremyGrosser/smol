@@ -14,4 +14,5 @@ SRCS += $(LOCAL_DIR)/platform.c \
         $(LOCAL_DIR)/i2c.c \
         $(LOCAL_DIR)/spi.c \
         $(LOCAL_DIR)/uart.c \
-        $(LOCAL_DIR)/rtc.c
+        $(LOCAL_DIR)/rtc.c \
+		$(LOCAL_DIR)/stubs.c
