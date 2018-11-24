@@ -3,6 +3,8 @@
 #include <board.h>
 #include "gclk.h"
 
+#include <stddef.h>
+
 static exti_func_t exti_functions[EIC_EXTINT_NUM];
 static int exti_initialized = 0;
 

@@ -76,6 +76,7 @@ struct spi_s {
 	uint8_t mosi_pad;
 	uint8_t miso_pad;
 	uint8_t sck_pad;
+	uint8_t nss_pad;
 
 	SercomSpi *sercom;
 };
