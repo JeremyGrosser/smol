@@ -2,8 +2,9 @@
 #define BOARD_H
 
 #include <platform.h>
-#include <platform/i2c.h>
 #include <platform/uart.h>
+#include <platform/i2c.h>
+#include <platform/spi.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -12,6 +13,7 @@ extern gpio_t A0, A1, A2, A3, A4, A5, AREF;
 
 extern uart_t UART;
 extern i2c_t I2C;
+extern spi_t SPI;
 
 #define LED D13
 #define LED_ON	0
