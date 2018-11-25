@@ -9,13 +9,11 @@ int main(void) {
 		return 1;
 	}
 
-	gpio_setup(&LED);
-
 	while(1) {
 		gpio_write(&LED, 1);
-		platform_delay(100);
+		platform_delay(1000);
 		gpio_write(&LED, 0);
-		platform_delay(100);
+		platform_delay(1000);
 	}
 
 	return 0;

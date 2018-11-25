@@ -115,15 +115,36 @@ int board_init() {
 
 	SPI_MISO.config = (pincfg_t){
 		.direction		= DIR_IN,
-		.drive			= DRIVE_LOW,
 		.pull			= PULL_DISABLE,
 		.pmux			= PMUX_ENABLE,
 		.pmux_function	= MUX_PA18C_SERCOM1_PAD2,
 	};
 
+	RF_IRQ.config = (pincfg_t){
+		.direction		= DIR_IN,
+		.pull			= PULL_DISABLE,
+		.pmux			= PMUX_DISABLE,
+	};
+
+	RF_RESET.config = (pincfg_t){
+		.direction		= DIR_OUT,
+		.pull			= PULL_DISABLE,
+		.pmux			= PMUX_DISABLE,
+	};
+
+	gpio_setup(&LED);
+	gpio_write(&LED, LED_ON);
+
+	gpio_setup(&RF_IRQ);
+	gpio_setup(&RF_RESET);
+	gpio_write(&RF_RESET, 0);	// Inverse logic, hold reset until SPI setup is completed.
+
 	uart_setup(&UART);
 	//i2c_setup(&I2C);
 	spi_setup(&SPI);
+
+	gpio_write(&RF_RESET, 1);
+	gpio_write(&LED, LED_OFF);
 
 	return 0;
 }

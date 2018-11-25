@@ -29,6 +29,9 @@ extern spi_t SPI;
 #define I2C_SDA		D20
 #define I2C_SCL		D21
 
+#define RF_IRQ		D8
+#define RF_RESET	A0
+
 int board_init();
 void console_write(uint8_t *msg, size_t len);
 
