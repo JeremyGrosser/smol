@@ -9,6 +9,7 @@
 #define GCLK_GEN_EIC		GCLK_GEN_RTC
 #define GCLK_GEN_UART		GCLK_GEN_MAIN
 #define GCLK_GEN_SPI		GCLK_GEN_MAIN
+#define GCLK_GEN_USB		GCLK_GEN_MAIN
 
 
 #endif

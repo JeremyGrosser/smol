@@ -69,6 +69,7 @@ int spi_setup(spi_t *spi) {
 	spi->sercom->INTENSET.bit.TXC = 1;
 	spi->sercom->INTENSET.bit.RXC = 1;
 	spi->sercom->INTENSET.bit.DRE = 1;
+	spi->sercom->INTENSET.bit.ERROR = 1;
 	//NVIC_EnableIRQ(SERCOM0_IRQn + spi->num);
 	
 	return 0;
@@ -76,30 +77,48 @@ int spi_setup(spi_t *spi) {
 
 void spi_begin(spi_t *spi) {
 	gpio_write(spi->nss, 0);
+	spi->sercom->INTFLAG.reg = 0xFF;
 }
 
-uint8_t spi_transfer(spi_t *spi, uint8_t data) {
-	uint8_t ret;
+size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
+	size_t i;
 
-	// Wait until data register is empty
-	while(!spi->sercom->INTFLAG.bit.DRE);
+	if(spi->sercom->INTFLAG.bit.ERROR) {
+		return 0;
+	}
 
-	// Load a byte
-	spi->sercom->DATA.bit.DATA = data;
+	for(i = 0; i < len; i++) {
+		// Wait until data register is empty
+		while(!spi->sercom->INTFLAG.bit.DRE && !spi->sercom->INTFLAG.bit.ERROR);
+		if(spi->sercom->INTFLAG.bit.ERROR) {
+			return i;
+		}
 
-	// Wait for transmit complete
-	while(!spi->sercom->INTFLAG.bit.TXC);
+		// Load a byte
+		spi->sercom->DATA.bit.DATA = out[i];
 
-	// Wait for receive complete
-	while(!spi->sercom->INTFLAG.bit.RXC);
+		// Wait for transmit complete
+		while(!spi->sercom->INTFLAG.bit.TXC && !spi->sercom->INTFLAG.bit.ERROR);
 
-	// Read a byte
-	ret = spi->sercom->DATA.bit.DATA;
+		// Wait for receive complete
+		while(!spi->sercom->INTFLAG.bit.RXC && !spi->sercom->INTFLAG.bit.ERROR);
 
-	// Clear interrupts
-	spi->sercom->INTFLAG.reg = 0xFF;
+		if(spi->sercom->INTFLAG.bit.ERROR) {
+			return i;
+		}
 
-	return ret;
+		// Read a byte
+		in[i] = spi->sercom->DATA.bit.DATA;
+
+		if(spi->sercom->INTFLAG.bit.ERROR) {
+			return i;
+		}
+
+		// Clear interrupts
+		spi->sercom->INTFLAG.reg = 0xFF;
+	}
+
+	return i;
 }
 
 void spi_end(spi_t *spi) {

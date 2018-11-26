@@ -103,6 +103,13 @@ struct i2c_s {
 	SercomI2cm *sercom;
 };
 
+struct usbdev_s {
+	gpio_t *dm;
+	gpio_t *dp;
+
+	UsbDeviceDescriptor endpoints[4];
+};
+
 void platform_init(void);
 uint32_t platform_ticks(void);
 void platform_delay(uint32_t ms);

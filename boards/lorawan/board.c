@@ -5,6 +5,8 @@
 #include <board.h>
 #include <stdio.h>
 
+#include <sx1231.h>
+
 
 /* Arduino pin names */
 gpio_t D0 = {.num = PIN_PA11};
@@ -60,6 +62,11 @@ i2c_t I2C = {
 	.num = 3,
 	.sda = &I2C_SDA,
 	.scl = &I2C_SCL,
+};
+
+sx1231_t RFM = {
+	.spi = &SPI,
+	.reset = &RF_RESET,
 };
 
 
@@ -135,15 +142,10 @@ int board_init() {
 	gpio_setup(&LED);
 	gpio_write(&LED, LED_ON);
 
-	gpio_setup(&RF_IRQ);
-	gpio_setup(&RF_RESET);
-	gpio_write(&RF_RESET, 0);	// Inverse logic, hold reset until SPI setup is completed.
-
 	uart_setup(&UART);
 	//i2c_setup(&I2C);
-	spi_setup(&SPI);
-
-	gpio_write(&RF_RESET, 1);
+	sx1231_setup(&RFM);
+	
 	gpio_write(&LED, LED_OFF);
 
 	return 0;
