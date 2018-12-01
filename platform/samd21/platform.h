@@ -107,7 +107,9 @@ struct usbdev_s {
 	gpio_t *dm;
 	gpio_t *dp;
 
-	UsbDeviceDescriptor endpoints[4];
+	__attribute__((__aligned__(4))) UsbDeviceDescriptor endpoints[4];
+	__attribute__((__aligned__(4))) uint8_t udd_ep_out_cache_buffer[2][64];
+	__attribute__((__aligned__(4))) uint8_t udd_ep_in_cache_buffer[2][64];
 };
 
 void platform_init(void);
