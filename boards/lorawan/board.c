@@ -1,6 +1,7 @@
 #include <platform/uart.h>
 #include <platform/i2c.h>
 #include <platform/spi.h>
+#include <platform/usbdev.h>
 #include <platform.h>
 #include <board.h>
 #include <stdio.h>
@@ -32,6 +33,8 @@ gpio_t A3 = {.num = PIN_PA04};
 gpio_t A4 = {.num = PIN_PA05};
 gpio_t A5 = {.num = PIN_PB02};
 gpio_t AREF = {.num = PIN_PA03};
+gpio_t USB_DM = {.num = PIN_PA24};
+gpio_t USB_DP = {.num = PIN_PA25};
 
 
 uart_t UART = {
@@ -69,6 +72,12 @@ sx1231_t RFM = {
 	.reset = &RF_RESET,
 };
 
+usbdev_t USBDEV = {
+	.dm = &D8,
+	.dp = &D9,
+	.hw = USB,
+};
+
 
 int board_init() {
 	platform_init();
@@ -78,6 +87,16 @@ int board_init() {
 		.drive = DRIVE_LOW,
 		.pull = PULL_DISABLE,
 		.pmux = PMUX_DISABLE,
+	};
+
+	USB_DM.config = (pincfg_t){
+		.pmux = PMUX_ENABLE,
+		.pmux_function = MUX_PA24G_USB_DM,
+	};
+
+	USB_DP.config = (pincfg_t){
+		.pmux = PMUX_ENABLE,
+		.pmux_function = MUX_PA25G_USB_DP,
 	};
 	
 	I2C_SDA.config = (pincfg_t){
@@ -145,6 +164,8 @@ int board_init() {
 	uart_setup(&UART);
 	//i2c_setup(&I2C);
 	sx1231_setup(&RFM);
+
+	usb_setup(&USBDEV);
 	
 	gpio_write(&LED, LED_OFF);
 
