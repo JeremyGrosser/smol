@@ -6,6 +6,7 @@
 #include <cmsis_gcc.h>
 
 #include <platform/gpio.h>
+#include <platform/usbdev.h>
 
 #include <stdint.h>
 
@@ -106,6 +107,8 @@ struct i2c_s {
 struct usbdev_s {
 	gpio_t *dm;
 	gpio_t *dp;
+
+	usb_enumerate_handler enumerate;
 
 	Usb *hw;
 	__attribute__((__aligned__(4))) UsbDeviceDescriptor endpoints[4];

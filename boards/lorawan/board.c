@@ -84,7 +84,7 @@ int board_init() {
 
 	LED.config = (pincfg_t){
 		.direction = DIR_OUT,
-		.drive = DRIVE_LOW,
+		.drive = DRIVE_HIGH,
 		.pull = PULL_DISABLE,
 		.pmux = PMUX_DISABLE,
 	};
@@ -165,7 +165,7 @@ int board_init() {
 	//i2c_setup(&I2C);
 	sx1231_setup(&RFM);
 
-	usb_setup(&USBDEV);
+	usb_setup(&USBDEV, cdcserial_enumerate);
 	
 	gpio_write(&LED, LED_OFF);
 

@@ -2,6 +2,8 @@
 #include <platform.h>
 #include "gclk.h"
 
+#include <dev/usb.h>
+
 #include <stdint.h>
 #include <string.h>
 
@@ -39,8 +41,10 @@ static void usb_calibrate(usbdev_t *dev) {
 			USB_PADCAL_TRIM(pad_trim));
 }
 
-int usb_setup(usbdev_t *dev) {
+int usb_setup(usbdev_t *dev, usb_enumerate_handler enumerate_func) {
 	Usb *usb = dev->hw;
+
+	dev->enumerate = enumerate_func;
 
 	gpio_setup(dev->dm);
 	gpio_setup(dev->dp);
@@ -99,7 +103,7 @@ int usb_open(usbdev_t *dev) {
 	return 0;
 }
 
-void usb_isconfigured(usbdev_t *dev) {
+int usb_isconfigured(usbdev_t *dev) {
 	Usb *usb = dev->hw;
 
 	if(usb->DEVICE.INTFLAG.bit.EORST) {
@@ -129,9 +133,17 @@ void usb_isconfigured(usbdev_t *dev) {
 		dev->endpoints[0].DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT = 0;
 
 		usb->DEVICE.DeviceEndpoint[0].EPSTATUSCLR.reg = USB_DEVICE_EPSTATUSCLR_BK0RDY;
+
+		return 0;
 	}else{
 		if(usb->DEVICE.DeviceEndpoint[0].EPINTFLAG.bit.RXSTP) {
-			// TODO Setup callback
+			if(dev->enumerate != NULL) {
+				usb->DEVICE.DeviceEndpoint[0].EPSTATUSCLR.reg = USB_DEVICE_EPINTFLAG_RXSTP;
+				dev->enumerate(dev);
+			}
+			return 0;
 		}
 	}
+
+	return 1;
 }
