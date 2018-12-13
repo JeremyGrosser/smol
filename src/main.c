@@ -9,9 +9,10 @@ int main(void) {
 		return 1;
 	}
 
+	/*
 	usb_open(&USBDEV);
-
 	while(usb_isconfigured(&USBDEV) != 0);
+	*/
 
 	while(1) {
 		gpio_write(&LED, 1);

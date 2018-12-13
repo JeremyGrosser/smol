@@ -28,24 +28,10 @@ void i2c_setup(i2c_t *i2c) {
 	gpio_write(i2c->scl, 0);
 	gpio_write(i2c->sda, 0);
 
-	// TODO: clock madness
-	gpio_t clockout = {
-		.num =		PIN_PA10,
-		.config = {
-			.direction	= DIR_OUT,
-			.drive		= DRIVE_LOW,
-			.pull		= PULL_ENABLE,
-			.pmux		= PMUX_ENABLE,
-			.pmux_function = MUX_PA10H_GCLK_IO4,
-		},
-	};
-	gpio_setup(&clockout);
-
 	// Fast clock (1MHz)
 	GCLK->GENCTRL.reg = (
 			GCLK_GENCTRL_ID(GCLK_GEN_I2C_FAST) |
 			GCLK_GENCTRL_SRC_OSC8M |
-			GCLK_GENCTRL_OE |
 			GCLK_GENCTRL_GENEN);
 	GCLK->GENDIV.reg = (
 			GCLK_GENDIV_ID(GCLK_GEN_I2C_FAST) |
@@ -67,10 +53,12 @@ void i2c_setup(i2c_t *i2c) {
 	*/
 
 	// Use the same clock as Fast for now
+	/*
 	GCLK->CLKCTRL.reg = (
 			GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOMX_SLOW_Val) |
 			GCLK_CLKCTRL_GEN(GCLK_GEN_I2C_FAST) |
 			GCLK_CLKCTRL_CLKEN);
+			*/
 
 	PM->APBCMASK.reg |= (1 << (i2c->num + 2));
 

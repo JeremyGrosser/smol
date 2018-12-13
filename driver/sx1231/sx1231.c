@@ -73,9 +73,19 @@
 0x50 + RegTest - Internal test registers
 */
 
+static uint8_t sx1231_readreg(sx1231_t *dev, uint8_t reg) {
+	uint8_t out;
+
+	spi_begin(dev->spi);
+	spi_transfer(dev->spi, &out, &reg, 1);
+	spi_transfer(dev->spi, &out, &reg, 1);
+	spi_end(dev->spi);
+	return out;
+}
+
 
 int sx1231_setup(sx1231_t *dev) {
-	//uint8_t version;
+	uint8_t version;
 
 	gpio_setup(dev->reset);
 	gpio_write(dev->reset, 1);
@@ -85,11 +95,9 @@ int sx1231_setup(sx1231_t *dev) {
 	gpio_write(dev->reset, 0);
 	platform_delay(5);
 
-	/*
 	version = sx1231_readreg(dev, REG_VERSION);
 
 	printf("sx1231: version 0x%02X\n", version);
-	*/
 
 	return 0;
 }

@@ -3,7 +3,7 @@ TOPDIR=.
 CPUS ?= 6
 MAKEFLAGS += -j$(CPUS)
 
-BOARD ?= samd21-xpro
+BOARD ?= lorawan
 TARGET ?= smol-$(BOARD)
 
 CFLAGS := -O0 -g -Wall -std=c11 -ffreestanding

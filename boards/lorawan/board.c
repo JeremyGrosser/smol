@@ -4,9 +4,12 @@
 #include <platform/usbdev.h>
 #include <platform.h>
 #include <board.h>
-#include <stdio.h>
 
+#include <eeprom.h>
 #include <sx1231.h>
+
+#include <stdio.h>
+#include <string.h>
 
 
 /* Arduino pin names */
@@ -67,6 +70,11 @@ i2c_t I2C = {
 	.scl = &I2C_SCL,
 };
 
+eeprom_t EEPROM = {
+	.i2c = &I2C,
+	.address = 0xA0,
+};
+
 sx1231_t RFM = {
 	.spi = &SPI,
 	.reset = &RF_RESET,
@@ -89,6 +97,18 @@ int board_init() {
 		.pmux = PMUX_DISABLE,
 	};
 
+	UART_RX.config = (pincfg_t){
+		.direction = DIR_IN,
+		.pmux = PMUX_ENABLE,
+		.pmux_function = MUX_PA10C_SERCOM0_PAD2,
+	};
+
+	UART_TX.config = (pincfg_t){
+		.direction = DIR_OUT,
+		.pmux = PMUX_ENABLE,
+		.pmux_function = MUX_PA11C_SERCOM0_PAD3,
+	};
+
 	USB_DM.config = (pincfg_t){
 		.pmux = PMUX_ENABLE,
 		.pmux_function = MUX_PA24G_USB_DM,
@@ -100,17 +120,11 @@ int board_init() {
 	};
 	
 	I2C_SDA.config = (pincfg_t){
-		.direction		= DIR_OUT,
-		.drive			= DRIVE_LOW,
-		.pull			= PULL_ENABLE,
 		.pmux			= PMUX_ENABLE,
 		.pmux_function	= MUX_PA22C_SERCOM3_PAD0,
 	};
 
 	I2C_SCL.config = (pincfg_t){
-		.direction		= DIR_OUT,
-		.drive			= DRIVE_LOW,
-		.pull			= PULL_ENABLE,
 		.pmux			= PMUX_ENABLE,
 		.pmux_function	= MUX_PA23C_SERCOM3_PAD1,
 	};
@@ -162,11 +176,13 @@ int board_init() {
 	gpio_write(&LED, LED_ON);
 
 	uart_setup(&UART);
-	//i2c_setup(&I2C);
+	eeprom_setup(&EEPROM);
 	sx1231_setup(&RFM);
 
-	usb_setup(&USBDEV, cdcserial_enumerate);
+	//usb_setup(&USBDEV, cdcserial_enumerate);
 	
+	printf("\r\n\r\nlorawan board_init ok\r\n");
+
 	gpio_write(&LED, LED_OFF);
 
 	return 0;
