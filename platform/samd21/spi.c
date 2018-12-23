@@ -20,7 +20,7 @@ int spi_setup(spi_t *spi) {
 	gpio_setup(spi->sck);
 	gpio_setup(spi->nss);
 
-	//gpio_write(spi->nss, 1);
+	gpio_write(spi->nss, 1);
 
 	GCLK->GENCTRL.reg = (
 			GCLK_GENCTRL_ID(GCLK_GEN_SPI) |
