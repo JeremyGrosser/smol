@@ -1,5 +1,9 @@
 #include <platform/gpio.h>
+#include <eeprom.h>
 #include <board.h>
+#include <stdio.h>
+
+#include <lib/hexdump.h>
 
 int main(void) {
 	int err;

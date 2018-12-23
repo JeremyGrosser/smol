@@ -20,11 +20,21 @@ int spi_setup(spi_t *spi) {
 	gpio_setup(spi->sck);
 	gpio_setup(spi->nss);
 
-	gpio_write(spi->nss, 1);
+	//gpio_write(spi->nss, 1);
+
+	GCLK->GENCTRL.reg = (
+			GCLK_GENCTRL_ID(GCLK_GEN_SPI) |
+			GCLK_GENCTRL_SRC_OSC8M |
+			GCLK_GENCTRL_GENEN);
+
+	// 500 kHZ clock for testing
+	GCLK->GENDIV.reg = (
+			GCLK_GENDIV_ID(GCLK_GEN_SPI) |
+			GCLK_GENDIV_DIV(16));
 
 	GCLK->CLKCTRL.reg = (
 			GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_SERCOM0_CORE_Val + spi->num) |
-			GCLK_CLKCTRL_GEN(GCLK_GEN_MAIN) |
+			GCLK_CLKCTRL_GEN(GCLK_GEN_SPI) |
 			GCLK_CLKCTRL_CLKEN);
 
 	PM->APBCMASK.reg |= (PM_APBCMASK_SERCOM0 << spi->num);
@@ -76,7 +86,7 @@ int spi_setup(spi_t *spi) {
 }
 
 void spi_begin(spi_t *spi) {
-	gpio_write(spi->nss, 0);
+	//gpio_write(spi->nss, 0);
 	spi->sercom->INTFLAG.reg = 0xFF;
 }
 
@@ -87,6 +97,18 @@ size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
 		return 0;
 	}
 
+	gpio_write(spi->nss, 0);
+
+	for(i = 0; i < len; i++) {
+		spi->sercom->INTFLAG.reg = 0xFF;
+		spi->sercom->DATA.bit.DATA = out[i];
+		while(!spi->sercom->INTFLAG.bit.TXC && !spi->sercom->INTFLAG.bit.RXC);
+		in[i] = spi->sercom->DATA.bit.DATA;
+	}
+
+	gpio_write(spi->nss, 1);
+
+	/*
 	for(i = 0; i < len; i++) {
 		// Wait until data register is empty
 		while(!spi->sercom->INTFLAG.bit.DRE && !spi->sercom->INTFLAG.bit.ERROR);
@@ -117,12 +139,13 @@ size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
 		// Clear interrupts
 		spi->sercom->INTFLAG.reg = 0xFF;
 	}
+	*/
 
 	return i;
 }
 
 void spi_end(spi_t *spi) {
-	gpio_write(spi->nss, 1);
+	//gpio_write(spi->nss, 1);
 }
 
 void spi_interrupt(spi_t *spi) {

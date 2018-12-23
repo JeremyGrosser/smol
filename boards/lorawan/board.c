@@ -6,7 +6,7 @@
 #include <board.h>
 
 #include <eeprom.h>
-#include <sx1231.h>
+#include <sx1276.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -70,12 +70,15 @@ i2c_t I2C = {
 	.scl = &I2C_SCL,
 };
 
+/* AT24C32 */
 eeprom_t EEPROM = {
 	.i2c = &I2C,
 	.address = 0xA0,
+	.page_size = 32,
+	.num_pages = 128,
 };
 
-sx1231_t RFM = {
+sx1276_t RFM = {
 	.spi = &SPI,
 	.reset = &RF_RESET,
 };
@@ -141,8 +144,8 @@ int board_init() {
 		.direction		= DIR_OUT,
 		.drive			= DRIVE_LOW,
 		.pull			= PULL_ENABLE,
-		.pmux			= PMUX_ENABLE,
-		.pmux_function	= MUX_PA19C_SERCOM1_PAD3,
+		//.pmux			= PMUX_ENABLE,
+		//.pmux_function	= MUX_PA19C_SERCOM1_PAD3,
 	};
 
 	SPI_MOSI.config = (pincfg_t){
@@ -168,7 +171,7 @@ int board_init() {
 
 	RF_RESET.config = (pincfg_t){
 		.direction		= DIR_OUT,
-		.pull			= PULL_DISABLE,
+		.pull			= PULL_ENABLE,
 		.pmux			= PMUX_DISABLE,
 	};
 
@@ -176,8 +179,8 @@ int board_init() {
 	gpio_write(&LED, LED_ON);
 
 	uart_setup(&UART);
-	eeprom_setup(&EEPROM);
-	sx1231_setup(&RFM);
+	//eeprom_setup(&EEPROM);
+	sx1276_setup(&RFM);
 
 	//usb_setup(&USBDEV, cdcserial_enumerate);
 	

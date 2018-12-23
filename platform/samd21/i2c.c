@@ -13,6 +13,8 @@
 #define I2C_BUSSTATE_OWNER		2
 #define I2C_BUSSTATE_BUSY		3
 
+#define I2C_CMD_STOP		0x03
+
 static uint8_t i2c_baud(uint32_t baudrate) {
 	return SystemCoreClock / ( 2 * baudrate) - 5 - (((SystemCoreClock / 1000000) * I2C_RISE_TIME_NS) / (2 * 1000));
 }
@@ -70,7 +72,7 @@ void i2c_setup(i2c_t *i2c) {
 			SERCOM_I2CM_CTRLA_LOWTOUTEN);
 
 	// Send ACK automatically when DATA is read
-	//i2c->sercom->CTRLB.reg |= SERCOM_I2CM_CTRLB_SMEN;
+	i2c->sercom->CTRLB.reg |= SERCOM_I2CM_CTRLB_SMEN;
 
 	i2c->sercom->BAUD.reg = i2c_baud(100000);
 
@@ -90,13 +92,7 @@ int i2c_start(i2c_t *i2c, uint8_t address) {
 	if(address & 1) {
 		// read
 		// wait for slave on bus
-		while(!i2c->sercom->INTFLAG.bit.SB) {
-			// If the slave NACKs, send a stop and return
-			if(i2c->sercom->INTFLAG.bit.MB) {
-				i2c->sercom->CTRLB.bit.CMD = 3;
-				return 1;
-			}
-		}
+		//while(!i2c->sercom->INTFLAG.bit.SB);
 	}else{
 		// write
 		// wait for master on bus
@@ -106,8 +102,9 @@ int i2c_start(i2c_t *i2c, uint8_t address) {
 	return 0;
 }
 
-int i2c_read(i2c_t *i2c, uint8_t address) {
+int i2c_read(i2c_t *i2c, uint8_t address, uint8_t *buf, size_t len) {
 	int err;
+	int i;
 
 	address = (address << 1) | 1;
 
@@ -117,8 +114,20 @@ int i2c_read(i2c_t *i2c, uint8_t address) {
 		return -1;
 	}
 
-	while(!i2c->sercom->INTFLAG.bit.SB);
-	return i2c->sercom->DATA.reg;
+	for(i = 0; i < len; i++) {
+		if(!i2c->sercom->INTFLAG.bit.SB) {
+			break;
+		}else{
+			buf[i] = i2c->sercom->DATA.reg;
+		}
+	}
+
+	// If slave is still trying to send data, send a STOP
+	if(i2c->sercom->INTFLAG.bit.SB) {
+		i2c->sercom->CTRLB.reg |= SERCOM_I2CM_CTRLB_CMD(I2C_CMD_STOP);
+	}
+
+	return i;
 }
 
 int i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
@@ -153,6 +162,12 @@ int i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
 		}
 	}
 	*/
+
+	return 0;
+}
+
+int i2c_write_address(i2c_t *i2c, uint8_t address, uint8_t command) {
+	//while(i2c->sercom->I2C_STATUS.bit.I2C_ACTIVE);
 
 	return 0;
 }
