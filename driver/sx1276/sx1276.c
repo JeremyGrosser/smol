@@ -218,11 +218,12 @@ int sx1276_set_frequency(sx1276_t *dev, float mhz) {
 int sx1276_setup(sx1276_t *dev) {
 	SX1276_OPMODE_Type opmode;
 	SX1276_DIO_MAPPING_Type diomap;
+	//903.9 - SF7BW125 to SF10BW125
 	SX1276_MODEM_CONFIG_Type modem_config = {
 		.bit = {
 			.bandwidth = SX1276_MODEM_CONFIG_BANDWIDTH_125000,
 			.coding_rate = SX1276_MODEM_CONFIG_CODING_RATE_4_5,
-			.spreading_factor = SX1276_MODEM_CONFIG_SPREADING_FACTOR_128,
+			.spreading_factor = 7,
 			.tx_continuous_mode = 0,
 			.rx_payload_crc_on = 0,
 			.symbol_timeout = 0x0064,
@@ -273,6 +274,7 @@ int sx1276_setup(sx1276_t *dev) {
 	/* use the entire 256 byte FIFO for tx/rx, but not both at the same time */
 	sx1276_writereg(dev, SX1276_FIFO_TX_BASE_ADDR, 0);
 	sx1276_writereg(dev, SX1276_FIFO_RX_BASE_ADDR, 0);
+	sx1276_writereg(dev, SX1276_FIFO_RX_PTR, 0);
 
 	/*
 	 * Packet format is preamble + explicit-header + payload + crc
@@ -296,13 +298,13 @@ int sx1276_setup(sx1276_t *dev) {
 
 	//sx1276_writereg(dev, SX1276_PA_CONFIG, pa_config.reg);
 	
-	irqmask.reg = sx1276_readreg(dev, SX1276_IRQFLAGS_MASK);
-	irqmask.bit.rx_done = 1;
+	//irqmask.reg = sx1276_readreg(dev, SX1276_IRQFLAGS_MASK);
+	//irqmask.bit.rx_done = 1;
+	irqmask.reg = 0xff;
 	sx1276_writereg(dev, SX1276_IRQFLAGS_MASK, irqmask.reg);
 
-	opmode.bit.mode = SX1276_OPMODE_MODE_RXCONT;
+	opmode.bit.mode = SX1276_OPMODE_MODE_RXSINGLE;
 	sx1276_writereg(dev, SX1276_OPMODE, opmode.reg);
-
 
 	return 0;
 }
