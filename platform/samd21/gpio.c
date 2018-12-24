@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 static exti_func_t exti_functions[EIC_EXTINT_NUM];
+static void *exti_args[EIC_EXTINT_NUM];
 static int exti_initialized = 0;
 
 static void exti_init(void) {
@@ -45,6 +46,7 @@ static void exti_attach(exti_t *exti) {
 	config_pos = ((exti->num % 8) * 4);
 
 	exti_functions[exti->num] = exti->function;
+	exti_args[exti->num] = exti->data;
 	EIC->CONFIG[config_num].reg &= ~(0xF << config_pos);
 	EIC->CONFIG[config_num].reg |= ((exti->sense | (exti->filter << 3)) << config_pos);
 	EIC->INTENSET.reg |= flag;
@@ -59,7 +61,7 @@ void EIC_Handler(void) {
 	EIC->INTFLAG.reg = 0xFFFFFFFF;
 	for(i = 0; i < EIC_EXTINT_NUM; i++) {
 		if(((flag >> i) & 1) && exti_functions[i] != NULL) {
-			exti_functions[i]();
+			exti_functions[i](exti_args[i]);
 		}
 	}
 }

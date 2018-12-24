@@ -1,4 +1,5 @@
 #include <platform/uart.h>
+#include <platform/gpio.h>
 #include <platform/i2c.h>
 #include <platform/spi.h>
 #include <platform/usbdev.h>
@@ -81,6 +82,7 @@ eeprom_t EEPROM = {
 sx1276_t RFM = {
 	.spi = &SPI,
 	.reset = &RF_RESET,
+	.dio0 = &RF_DIO0,
 };
 
 usbdev_t USBDEV = {
@@ -163,10 +165,18 @@ int board_init() {
 		.pmux_function	= MUX_PA18C_SERCOM1_PAD2,
 	};
 
-	RF_IRQ.config = (pincfg_t){
+	RF_DIO0.config = (pincfg_t){
 		.direction		= DIR_IN,
 		.pull			= PULL_DISABLE,
-		.pmux			= PMUX_DISABLE,
+		.pmux			= PMUX_ENABLE,
+		.pmux_function	= MUX_PA06A_EIC_EXTINT6,
+	};
+	RF_DIO0.interrupt = (exti_t){
+		.num = 6,
+		.sense = SENSE_RISE,
+		.filter = FILTER_DISABLE,
+		.function = sx1276_interrupt,
+		.data = (void *)&RFM,
 	};
 
 	RF_RESET.config = (pincfg_t){

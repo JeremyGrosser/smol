@@ -4,7 +4,7 @@
 typedef struct gpio_s gpio_t;
 typedef struct pincfg_s pincfg_t;
 typedef struct exti_s exti_t;
-typedef void (*exti_func_t)(void);
+typedef void (*exti_func_t)(void *);
 
 void gpio_setup(gpio_t *gpio);
 int gpio_read(gpio_t *gpio);

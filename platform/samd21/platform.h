@@ -13,6 +13,7 @@
 struct exti_s {
 	uint32_t num;
 	exti_func_t function;
+	void *data;
 	enum {
 		SENSE_NONE	= 0,
 		SENSE_RISE	= 1,

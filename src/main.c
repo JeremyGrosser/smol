@@ -19,10 +19,8 @@ int main(void) {
 	*/
 
 	while(1) {
-		gpio_write(&LED, 1);
-		platform_delay(1000);
-		gpio_write(&LED, 0);
-		platform_delay(1000);
+		sx1276_dump_status(&RFM);
+		platform_delay(5000);
 	}
 
 	return 0;
