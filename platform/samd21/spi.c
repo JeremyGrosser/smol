@@ -85,10 +85,6 @@ int spi_setup(spi_t *spi) {
 	return 0;
 }
 
-void spi_begin(spi_t *spi) {
-	//gpio_write(spi->nss, 0);
-	spi->sercom->INTFLAG.reg = 0xFF;
-}
 
 size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
 	size_t i;
@@ -104,6 +100,9 @@ size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
 		spi->sercom->DATA.bit.DATA = out[i];
 		while(!spi->sercom->INTFLAG.bit.TXC && !spi->sercom->INTFLAG.bit.RXC);
 		in[i] = spi->sercom->DATA.bit.DATA;
+		if(spi->sercom->INTFLAG.bit.ERROR) {
+			break;
+		}
 	}
 
 	gpio_write(spi->nss, 1);
