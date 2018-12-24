@@ -7,7 +7,7 @@ int spi_setup(spi_t *spi) {
 void spi_begin(spi_t *spi) {
 }
 
-uint8_t spi_transfer(spi_t *spi, uint8_t data) {
+size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
 	return 0;
 }
 
