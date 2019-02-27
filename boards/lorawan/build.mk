@@ -11,4 +11,4 @@ LDSCRIPT ?= $(CMSIS)/Device/ATMEL/SAMD21/source/gcc/samd21g18a_flash.ld
 
 include $(TOPDIR)/platform/samd21/build.mk
 include $(TOPDIR)/driver/eeprom/build.mk
-include $(TOPDIR)/driver/sx1276/build.mk
+include $(TOPDIR)/driver/sx127x/build.mk

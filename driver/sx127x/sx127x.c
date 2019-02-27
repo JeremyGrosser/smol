@@ -1,7 +1,9 @@
 #include <platform/spi.h>
 #include <platform.h>
-#include "sx1276.h"
+#include "sx127x.h"
 
+#include <lib/hexdump.h>
+#include <string.h>
 #include <stdio.h>
 
 typedef union {
@@ -25,10 +27,12 @@ typedef union {
 #define SX1276_OPMODE_MODE_CAD		7
 
 #define SX1276_FIFO					0x00
+#define SX1276_FIFO_ADDR_PTR		0x0D
 #define SX1276_FIFO_TX_BASE_ADDR	0x0E
 #define SX1276_FIFO_RX_BASE_ADDR	0x0F
 #define SX1276_FIFO_RX_NB_BYTES		0x13
-#define SX1276_FIFO_RX_PTR			0x25
+#define SX1276_FIFO_RX_PTR			0x25 /* address of the last byte in the RX fifo */
+#define SX1276_FIFO_TX_NB_BYTES		0x22 /* payload length */
 
 
 typedef union {
@@ -155,6 +159,9 @@ typedef union {
 } SX1276_MODEM_STATUS_Type;
 #define SX1276_MODEM_STATUS 0x18
 
+
+#define SX1276_VERSION 0x42
+
 static uint8_t sx1276_readreg(sx1276_t *dev, uint8_t reg) {
 	uint8_t out[2];
 	uint8_t in[2];
@@ -189,16 +196,31 @@ static int sx1276_readfifo(sx1276_t *dev, uint8_t *buf, size_t len) {
 	}
 
 	/* reset rx pointer to the beginning of the rx fifo */
-	sx1276_writereg(dev, SX1276_FIFO_RX_PTR, sx1276_readreg(dev, SX1276_FIFO_RX_BASE_ADDR));
+	sx1276_writereg(dev, SX1276_FIFO_ADDR_PTR, sx1276_readreg(dev, SX1276_FIFO_RX_BASE_ADDR));
 
 	for(i = 0; i < psize; i++) {
 		buf[i] = sx1276_readreg(dev, SX1276_FIFO);
 	}
 
 	/* reset rx pointer to the beginning of the rx fifo */
-	sx1276_writereg(dev, SX1276_FIFO_RX_PTR, sx1276_readreg(dev, SX1276_FIFO_RX_BASE_ADDR));
+	//sx1276_writereg(dev, SX1276_FIFO_RX_PTR, sx1276_readreg(dev, SX1276_FIFO_RX_BASE_ADDR));
 
 	return psize;
+}
+
+static int sx1276_writefifo(sx1276_t *dev, uint8_t *buf, size_t len) {
+	int i;
+
+	sx1276_writereg(dev, SX1276_FIFO_ADDR_PTR, sx1276_readreg(dev, SX1276_FIFO_TX_BASE_ADDR));
+	sx1276_writereg(dev, SX1276_FIFO_TX_NB_BYTES, len);
+	for(i = 0; i < len; i++) {
+		sx1276_writereg(dev, SX1276_FIFO, buf[i]);
+	}
+
+	/* XXX: testing only */
+	sx1276_writereg(dev, SX1276_FIFO_RX_NB_BYTES, len);
+
+	return len;
 }
 
 
@@ -261,7 +283,7 @@ int sx1276_setup(sx1276_t *dev) {
 	platform_delay(10);
 
 	if(sx1276_readreg(dev, SX1276_OPMODE) != opmode.reg) {
-		printf("sx1276: setting opmode failed\r\n");
+		printf("sx127x: setting opmode failed\r\n");
 		return 1;
 	}
 
@@ -309,9 +331,36 @@ int sx1276_setup(sx1276_t *dev) {
 	return 0;
 }
 
+uint8_t sx1276_version(sx1276_t *dev) {
+	return sx1276_readreg(dev, SX1276_VERSION);
+}
+
 void sx1276_interrupt(void *data) {
 	//sx1276_t *dev = (sx1276_t *)data;
-	printf("sx1276: RX DONE\r\n");
+	printf("sx127x: RX DONE\r\n");
+}
+
+void sx1276_test_fifo(sx1276_t *dev) {
+	uint8_t testdata[16] = {
+		0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB,
+		0xCC, 0xDD, 0xEE, 0xFF };
+	uint8_t readback[16] = {0};
+	size_t len;
+
+	sx1276_writefifo(dev, testdata, 16);
+
+	if((len = sx1276_readfifo(dev, readback, 16)) != 16) {
+		printf("sx1276_test_fifo: readfifo returned %d != %d\r\n", len, 16);
+	}
+
+	printf("testdata:");
+	hexdump(testdata, 16);
+	printf("readback:");
+	hexdump(readback, 16);
+
+	if(memcmp(readback, testdata, len) != 0) {
+		printf("sx1276_test_fifo: readback verification failed\r\n");
+	}
 }
 
 void sx1276_dump_status(sx1276_t *dev) {
@@ -323,7 +372,7 @@ void sx1276_dump_status(sx1276_t *dev) {
 	int i;
 
 	opmode.reg = sx1276_readreg(dev, SX1276_OPMODE);
-	printf("sx1276: opmode mode %d\r\n", opmode.bit.mode);
+	printf("sx127x: opmode mode %d\r\n", opmode.bit.mode);
 
 	flags.reg = sx1276_readreg(dev, SX1276_IRQFLAGS);
 	printf("        rx_timeout=%d rx_done=%d crc_error=%d valid=%d\r\n        tx_done=%d cad_done=%d fhss=%d cad_detect=%d\r\n",

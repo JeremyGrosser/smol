@@ -7,7 +7,7 @@
 #include <board.h>
 
 #include <eeprom.h>
-#include <sx1276.h>
+#include <sx127x.h>
 
 #include <stdio.h>
 #include <string.h>

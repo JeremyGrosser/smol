@@ -12,8 +12,10 @@ struct sx1276_s {
 typedef struct sx1276_s sx1276_t;
 
 int sx1276_setup(sx1276_t *dev);
+uint8_t sx1276_version(sx1276_t *dev);
 int sx1276_set_frequency(sx1276_t *dev, float mhz);
 void sx1276_interrupt(void *data);
 void sx1276_dump_status(sx1276_t *dev);
+void sx1276_test_fifo(sx1276_t *dev);
 
 #endif

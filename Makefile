@@ -15,5 +15,6 @@ all: $(TARGET).elf $(TARGET).hex $(TARGET).bin $(TARGET).lst
 
 include make/macros.mk
 include boards/$(BOARD)/build.mk
+include lib/build.mk
 include src/build.mk
 include make/toolchain.mk

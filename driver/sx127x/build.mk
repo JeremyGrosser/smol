@@ -2,4 +2,4 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 CFLAGS += -I$(LOCAL_DIR)
 
-SRCS += $(LOCAL_DIR)/sx1276.c
+SRCS += $(LOCAL_DIR)/sx127x.c
