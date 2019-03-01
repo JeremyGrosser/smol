@@ -79,7 +79,7 @@ eeprom_t EEPROM = {
 	.num_pages = 128,
 };
 
-sx1276_t RFM = {
+sx127x_t RFM = {
 	.spi = &SPI,
 	.reset = &RF_RESET,
 	.dio0 = &RF_DIO0,
@@ -93,6 +93,8 @@ usbdev_t USBDEV = {
 
 
 int board_init() {
+	int err;
+
 	platform_init();
 
 	LED.config = (pincfg_t){
@@ -175,7 +177,7 @@ int board_init() {
 		.num = 6,
 		.sense = SENSE_RISE,
 		.filter = FILTER_DISABLE,
-		.function = sx1276_interrupt,
+		.function = sx127x_interrupt,
 		.data = (void *)&RFM,
 	};
 
@@ -190,7 +192,10 @@ int board_init() {
 
 	uart_setup(&UART);
 	//eeprom_setup(&EEPROM);
-	sx1276_setup(&RFM);
+	if((err = sx127x_setup(&RFM)) != 0) {
+		printf("sx127x_setup failed: %s\r\n", sx127x_get_error(&RFM));
+		return err;
+	}
 
 	//usb_setup(&USBDEV, cdcserial_enumerate);
 	

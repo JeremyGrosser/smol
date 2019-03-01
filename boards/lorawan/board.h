@@ -16,7 +16,7 @@ extern uart_t UART;
 extern usbdev_t USBDEV;
 
 extern eeprom_t EEPROM;
-extern sx1276_t RFM;
+extern sx127x_t RFM;
 
 #define LED			A2
 #define LED_ON		0

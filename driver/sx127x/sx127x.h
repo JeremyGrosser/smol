@@ -1,21 +1,23 @@
-#ifndef SX1276_H
-#define SX1276_H
+#ifndef SX127x_H
+#define SX127x_H
 #include <platform/gpio.h>
 #include <platform/spi.h>
 #include <stdint.h>
 
-struct sx1276_s {
+struct sx127x_s {
 	spi_t *spi;
 	gpio_t *reset;
 	gpio_t *dio0;
-};
-typedef struct sx1276_s sx1276_t;
 
-int sx1276_setup(sx1276_t *dev);
-uint8_t sx1276_version(sx1276_t *dev);
-int sx1276_set_frequency(sx1276_t *dev, float mhz);
-void sx1276_interrupt(void *data);
-void sx1276_dump_status(sx1276_t *dev);
-void sx1276_test_fifo(sx1276_t *dev);
+	char *errmsg;
+};
+typedef struct sx127x_s sx127x_t;
+
+int sx127x_setup(sx127x_t *dev);
+void sx127x_interrupt(void *data);
+char *sx127x_get_error(sx127x_t *dev);
+
+uint8_t sx127x_version(sx127x_t *dev);
+int sx127x_transmit(sx127x_t *dev, uint8_t *buf, size_t len);
 
 #endif
