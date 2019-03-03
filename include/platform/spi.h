@@ -2,6 +2,7 @@
 #define SPI_H
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef struct spi_s spi_t;
 

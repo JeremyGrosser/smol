@@ -85,8 +85,8 @@ int spi_setup(spi_t *spi) {
 	return 0;
 }
 
-
 size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
+	volatile uint8_t tmp __attribute__((unused));
 	size_t i;
 
 	if(spi->sercom->INTFLAG.bit.ERROR) {
@@ -99,7 +99,12 @@ size_t spi_transfer(spi_t *spi, uint8_t *out, uint8_t *in, size_t len) {
 		spi->sercom->INTFLAG.reg = 0xFF;
 		spi->sercom->DATA.bit.DATA = out[i];
 		while(!spi->sercom->INTFLAG.bit.TXC && !spi->sercom->INTFLAG.bit.RXC);
-		in[i] = spi->sercom->DATA.bit.DATA;
+
+		if(in != NULL) {
+			in[i] = spi->sercom->DATA.bit.DATA;
+		}else{
+			tmp = spi->sercom->DATA.bit.DATA;
+		}
 		if(spi->sercom->INTFLAG.bit.ERROR) {
 			break;
 		}
