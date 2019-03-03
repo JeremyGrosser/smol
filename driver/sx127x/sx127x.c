@@ -7,12 +7,12 @@
 #define SX127X_FXOSC	32000000.0f
 #define SX127X_FSTEP	(SX127X_FXOSC / (1 << 19))
 
-enum {
+enum sx127x_errno {
 	ERR_FREQUENCY,
 	ERR_OPMODE,
-} sx127x_errno;
+};
 
-enum {
+enum sx127x_register {
 	RegFifo = 0x00,
 	RegOpMode = 0x01,
 	RegFrMsb = 0x06,
@@ -26,11 +26,13 @@ enum {
 	RegFifoRxByteAddr = 0x25,
 	RegRxNbBytes = 0x13,
 	RegIrqFlags = 0x12,
-//	RegModemStat = 0x18,
+	RegModemStat = 0x18,
 	RegModemConfig1 = 0x1D,
 	RegModemConfig2 = 0x1E,
 	RegModemConfig3 = 0x26,
-} sx127x_register;
+	RegDioMapping1 = 0x40,
+	RegDioMapping2 = 0x41,
+};
 
 typedef union {
 	struct {
@@ -66,7 +68,6 @@ typedef union {
 	uint8_t reg;
 } __attribute__((packed)) RegIrqFlags_t;
 
-/*
 typedef union {
 	struct {
 		bool SignalDetected:1;
@@ -78,7 +79,6 @@ typedef union {
 	} bit;
 	uint8_t reg;
 } __attribute__((packed)) RegModemStat_t;
-*/
 
 typedef union {
 	struct {
@@ -109,7 +109,27 @@ typedef union {
 	uint8_t reg;
 } __attribute__((packed)) RegModemConfig3_t;
 
-static uint8_t sx127x_readreg(sx127x_t *dev, uint8_t reg) {
+typedef union {
+	struct {
+		uint8_t Dio3Mapping:2;
+		uint8_t Dio2Mapping:2;
+		uint8_t Dio1Mapping:2;
+		uint8_t Dio0Mapping:2;
+	} bit;
+	uint8_t reg;
+} __attribute__((packed)) RegDioMapping1_t;
+
+typedef union {
+	struct {
+		bool MapPreambleDetect:1;
+		uint8_t reserved:3;
+		uint8_t Dio5Mapping:2;
+		uint8_t Dio4Mapping:2;
+	} bit;
+	uint8_t reg;
+} __attribute__((packed)) RegDioMapping2_t;
+
+static uint8_t sx127x_readreg(sx127x_t *dev, enum sx127x_register reg) {
 	uint8_t out[2];
 	uint8_t in[2];
 
@@ -120,7 +140,7 @@ static uint8_t sx127x_readreg(sx127x_t *dev, uint8_t reg) {
 	return in[1];
 }
 
-static uint8_t sx127x_writereg(sx127x_t *dev, uint8_t reg, uint8_t val) {
+static uint8_t sx127x_writereg(sx127x_t *dev, enum sx127x_register reg, uint8_t val) {
 	uint8_t out[2];
 	uint8_t in[2];
 
@@ -146,6 +166,7 @@ static void sx127x_reset(sx127x_t *dev) {
 	platform_delay(100); 
 }
 
+/*
 static void sx127x_modem_config(sx127x_t *dev) {
 	RegModemConfig1_t mc1;
 	RegModemConfig2_t mc2;
@@ -157,6 +178,31 @@ static void sx127x_modem_config(sx127x_t *dev) {
 
 	printf("SF%u BW%u CR%u\r\n", mc2.bit.SpreadingFactor, mc1.bit.Bw, mc1.bit.CodingRate);
 }
+*/
+
+/*
+static void sx127x_modem_status(sx127x_t *dev) {
+	RegModemStat_t status;
+
+	status.reg = sx127x_readreg(dev, RegModemStat);
+	if(status.bit.SignalDetected) {
+		printf("DETECT ");
+	}
+	if(status.bit.SignalSync) {
+		printf("SYNC ");
+	}
+	if(status.bit.RxOngoing) {
+		printf("RX ");
+	}
+	if(status.bit.HeaderValid) {
+		printf("HDR ");
+	}
+	if(status.bit.ModemClear) {
+		printf("CLR ");
+	}
+	printf("\r\n");
+}
+*/
 
 /* Get transceiver frequency in Hz */
 uint32_t sx127x_get_frequency(sx127x_t *dev) {
@@ -185,6 +231,7 @@ uint32_t sx127x_set_frequency(sx127x_t *dev, uint32_t frequency) {
 
 int sx127x_setup(sx127x_t *dev) {
 	RegOpMode_t opmode;
+	RegDioMapping1_t diomap;
 
 	dev->errmsg = "No error";
 
@@ -208,7 +255,11 @@ int sx127x_setup(sx127x_t *dev) {
 	sx127x_writereg(dev, RegFifoTxBaseAddr, 64);
 	sx127x_writereg(dev, RegFifoAddrPtr, 0);
 
-	sx127x_modem_config(dev);
+	//sx127x_modem_config(dev);
+	
+	diomap.reg = sx127x_readreg(dev, RegDioMapping1);
+	diomap.bit.Dio0Mapping = 0; // RxDone interrupt
+	sx127x_writereg(dev, RegDioMapping1, diomap.reg);
 
 	return 0;
 }
@@ -277,7 +328,7 @@ int sx127x_receive(sx127x_t *dev, uint8_t *buf, size_t len) {
 	// Wait for RxDone
 	do {
 		irqflags.reg = sx127x_readreg(dev, RegIrqFlags);
-		platform_delay(1);
+		//platform_delay(1);
 	}while(!(irqflags.bit.RxDone | irqflags.bit.RxTimeout));
 
 	if(irqflags.bit.RxTimeout) {

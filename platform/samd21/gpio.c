@@ -3,11 +3,12 @@
 #include <board.h>
 #include "gclk.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 static exti_func_t exti_functions[EIC_EXTINT_NUM];
 static void *exti_args[EIC_EXTINT_NUM];
-static int exti_initialized = 0;
+static bool exti_initialized = false;
 
 static void exti_init(void) {
 	int i;
@@ -30,14 +31,14 @@ static void exti_init(void) {
 
 	EIC->INTFLAG.reg = 0xFFFFFFFF;
 	NVIC_EnableIRQ(EIC_IRQn);
-	exti_initialized = 1;
+	exti_initialized = true;
 }
 
 static void exti_attach(exti_t *exti) {
 	int config_num, config_pos;
 	int flag;
 
-	if(exti_initialized == 0) {
+	if(!exti_initialized) {
 		exti_init();
 	}
 

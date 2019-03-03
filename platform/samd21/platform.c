@@ -25,7 +25,9 @@ uint32_t platform_ticks(void) {
 
 void platform_delay(uint32_t ms) {
 	uint32_t until = ticks + ms;
-	while(ticks < until);
+	while(ticks < until) {
+		__WFI();
+	}
 }
 
 void HardFault_Handler(void) {
