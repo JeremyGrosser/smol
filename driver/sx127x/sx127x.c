@@ -32,6 +32,7 @@ enum sx127x_register {
 	RegModemConfig3 = 0x26,
 	RegDioMapping1 = 0x40,
 	RegDioMapping2 = 0x41,
+	RegSyncWord = 0x39,
 };
 
 typedef union {
@@ -261,6 +262,8 @@ int sx127x_setup(sx127x_t *dev) {
 	diomap.bit.Dio0Mapping = 0; // RxDone interrupt
 	sx127x_writereg(dev, RegDioMapping1, diomap.reg);
 
+	//sx127x_writereg(dev, RegSyncWord, 0x34); // LoRaWAN sync word
+
 	return 0;
 }
 
@@ -279,6 +282,7 @@ uint8_t sx127x_version(sx127x_t *dev) {
 int sx127x_transmit(sx127x_t *dev, uint8_t *buf, size_t len) {
 	RegOpMode_t opmode;
 	RegIrqFlags_t irqflags;
+	int i;
 
 	opmode.reg = sx127x_readreg(dev, RegOpMode);
 	opmode.bit.Mode = MODE_STANDBY;
@@ -287,10 +291,16 @@ int sx127x_transmit(sx127x_t *dev, uint8_t *buf, size_t len) {
 	/* Set FifoAddrPtr to TxBaseAddr */
 	sx127x_writereg(dev, RegFifoAddrPtr, sx127x_readreg(dev, RegFifoTxBaseAddr));
 
+	for(i = 0; i < len; i++) {
+		sx127x_writereg(dev, RegFifo, buf[i]);
+	}
+
+	/*
 	if(spi_transfer(dev->spi, buf, NULL, len) != len) {
 		dev->errmsg = "sx127x_transmit: spi_transfer failed";
 		return 1;
 	}
+	*/
 
 	opmode.bit.Mode = MODE_TX;
 	sx127x_writereg(dev, RegOpMode, opmode.reg);

@@ -22,18 +22,15 @@ int main(void) {
 	while(usb_isconfigured(&USBDEV) != 0);
 	*/
 
-	uint8_t testdata[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
+	// first byte transmitted is packet length, second byte is optional address
+	uint8_t testdata[] = {0x08, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
 	uint8_t rxbuf[64] = {0};
 
 	setbuf(stdout, NULL);
 
 	while(1) {
-		/*
-		err = sx127x_transmit(&RFM, testdata, sizeof(testdata));
-		printf("TX %d\r\n", err);
-		platform_delay(500);
-		continue;
-		*/
+		//err = sx127x_transmit(&RFM, testdata, sizeof(testdata));
+		//platform_delay(500);
 
 		len = sx127x_receive(&RFM, rxbuf, sizeof(rxbuf));
 		if(len == -1) {
