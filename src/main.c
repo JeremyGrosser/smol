@@ -1,17 +1,42 @@
 #include <platform/gpio.h>
 #include <board.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <sx127x.h>
 #include <lib/hexdump.h>
 
 int main(void) {
+	eeprom_page_t page;
+
 	int err;
 	int len;
 
 	err = board_init();
 	if(err != 0) {
 		return 1;
+	}
+
+	page.address = 0x0000;
+	page.data = malloc(EEPROM.page_size);
+	if(page.data == NULL) {
+		printf("malloc failed, panic\r\n");
+		return 1;
+	}
+	memset((void *)page.data, 0, EEPROM.page_size);
+	strcpy((char *)page.data, "\xDE\xAD\xBE\xEF\xCA\xFE\x00");
+
+	err = eeprom_page_write(&EEPROM, &page);
+	if(err != 0) {
+		printf("eeprom: write page failed\r\n");
+	}
+
+	err = eeprom_page_read(&EEPROM, &page);
+	if(err != 0) {
+		printf("eeprom: read page failed\r\n");
+	}else{
+		hexdump(page.data, EEPROM.page_size);
 	}
 
 	printf("sx127x: version 0x%02X\r\n", sx127x_version(&RFM));
@@ -29,8 +54,11 @@ int main(void) {
 	setbuf(stdout, NULL);
 
 	while(1) {
-		//err = sx127x_transmit(&RFM, testdata, sizeof(testdata));
-		//platform_delay(500);
+		gpio_toggle(&LED);
+		platform_delay(1000);
+		/*
+		err = sx127x_transmit(&RFM, testdata, sizeof(testdata));
+		platform_delay(100);
 
 		len = sx127x_receive(&RFM, rxbuf, sizeof(rxbuf));
 		if(len == -1) {
@@ -43,6 +71,7 @@ int main(void) {
 		}else{
 			hexdump(rxbuf, len);
 		}
+		*/
 	}
 
 	return 0;

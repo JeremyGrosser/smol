@@ -74,7 +74,7 @@ i2c_t I2C = {
 /* AT24C32 */
 eeprom_t EEPROM = {
 	.i2c = &I2C,
-	.address = 0xA0,
+	.address = 0x50, // low 3 bits correspond to A0,A1,A2 jumpers
 	.page_size = 32,
 	.num_pages = 128,
 };
@@ -127,11 +127,13 @@ int board_init() {
 	};
 	
 	I2C_SDA.config = (pincfg_t){
+		.pull			= PULL_DISABLE,
 		.pmux			= PMUX_ENABLE,
 		.pmux_function	= MUX_PA22C_SERCOM3_PAD0,
 	};
 
 	I2C_SCL.config = (pincfg_t){
+		.pull			= PULL_DISABLE,
 		.pmux			= PMUX_ENABLE,
 		.pmux_function	= MUX_PA23C_SERCOM3_PAD1,
 	};
@@ -191,7 +193,8 @@ int board_init() {
 	gpio_write(&LED, LED_ON);
 
 	uart_setup(&UART);
-	//eeprom_setup(&EEPROM);
+	eeprom_setup(&EEPROM);
+
 	if((err = sx127x_setup(&RFM)) != 0) {
 		printf("sx127x_setup failed: %s\r\n", sx127x_get_error(&RFM));
 		return err;
