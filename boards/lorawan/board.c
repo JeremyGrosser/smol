@@ -171,7 +171,7 @@ int board_init() {
 
 	RF_DIO0.config = (pincfg_t){
 		.direction		= DIR_IN,
-		.pull			= PULL_DISABLE,
+		.pull			= PULL_ENABLE,
 		.pmux			= PMUX_ENABLE,
 		.pmux_function	= MUX_PA06A_EIC_EXTINT6,
 	};
@@ -195,6 +195,7 @@ int board_init() {
 	uart_setup(&UART);
 	eeprom_setup(&EEPROM);
 
+	gpio_write(&RF_DIO0, 0);
 	if((err = sx127x_setup(&RFM)) != 0) {
 		printf("sx127x_setup failed: %s\r\n", sx127x_get_error(&RFM));
 		return err;

@@ -5,7 +5,8 @@
 #include <stdio.h>
 
 #define SX127X_FXOSC	32000000.0f
-#define SX127X_FSTEP	(SX127X_FXOSC / (1 << 19))
+//#define SX127X_FSTEP	(SX127X_FXOSC / (1 << 19))
+#define SX127X_FSTEP	61
 
 enum sx127x_errno {
 	ERR_FREQUENCY,
@@ -33,6 +34,8 @@ enum sx127x_register {
 	RegDioMapping1 = 0x40,
 	RegDioMapping2 = 0x41,
 	RegSyncWord = 0x39,
+	RegPktSnrValue = 0x19,
+	RegPktRssiValue = 0x1A,
 };
 
 typedef union {
@@ -167,8 +170,7 @@ static void sx127x_reset(sx127x_t *dev) {
 	platform_delay(100); 
 }
 
-/*
-static void sx127x_modem_config(sx127x_t *dev) {
+void sx127x_modem_config(sx127x_t *dev, uint8_t sf, uint8_t bw, uint8_t cr, uint8_t syncword) {
 	RegModemConfig1_t mc1;
 	RegModemConfig2_t mc2;
 	RegModemConfig3_t mc3;
@@ -177,9 +179,15 @@ static void sx127x_modem_config(sx127x_t *dev) {
 	mc2.reg = sx127x_readreg(dev, RegModemConfig2);
 	mc3.reg = sx127x_readreg(dev, RegModemConfig3);
 
-	printf("SF%u BW%u CR%u\r\n", mc2.bit.SpreadingFactor, mc1.bit.Bw, mc1.bit.CodingRate);
+	mc1.bit.Bw = bw;
+	mc1.bit.CodingRate = cr;
+	mc2.bit.SpreadingFactor = sf;
+
+	sx127x_writereg(dev, RegModemConfig1, mc1.reg);
+	sx127x_writereg(dev, RegModemConfig2, mc2.reg);
+	sx127x_writereg(dev, RegModemConfig3, mc3.reg);
+	sx127x_writereg(dev, RegSyncWord, syncword);
 }
-*/
 
 /*
 static void sx127x_modem_status(sx127x_t *dev) {
@@ -206,7 +214,7 @@ static void sx127x_modem_status(sx127x_t *dev) {
 */
 
 /* Get transceiver frequency in Hz */
-uint32_t sx127x_get_frequency(sx127x_t *dev) {
+static uint32_t sx127x_get_frequency(sx127x_t *dev) {
 	uint32_t frf;
 
 	frf = (sx127x_readreg(dev, RegFrMsb) << 16);
@@ -219,7 +227,7 @@ uint32_t sx127x_get_frequency(sx127x_t *dev) {
 /* 
  * Set transciever frequency in Hz. Must be in SLEEP mode.
  */
-uint32_t sx127x_set_frequency(sx127x_t *dev, uint32_t frequency) {
+static uint32_t sx127x_set_frequency(sx127x_t *dev, uint32_t frequency) {
 	uint32_t frf;
 	frf = (frequency / SX127X_FSTEP);
 
@@ -230,11 +238,41 @@ uint32_t sx127x_set_frequency(sx127x_t *dev, uint32_t frequency) {
 	return sx127x_get_frequency(dev);
 }
 
+int sx127x_set_channel(sx127x_t *dev, lorawan_channel_t *channels, lorawan_data_rate_t *data_rates, uint8_t chan_num, uint8_t dr_num) {
+	lorawan_channel_t chan;
+	lorawan_data_rate_t dr;
+	RegOpMode_t opmode;
+
+	opmode.reg = sx127x_readreg(dev, RegOpMode);
+	if(opmode.bit.Mode > MODE_STANDBY) {
+		dev->errmsg = "Cannot change channel outside of SLEEP and STANDBY modes";
+		return -1;
+	}
+
+	chan = channels[chan_num];
+	if(dr_num < chan.min_dr || dr_num > chan.max_dr) {
+		dev->errmsg = "Invalid data rate for channel";
+		return -2;
+	}
+	dr = data_rates[dr_num];
+
+	sx127x_set_frequency(dev, chan.freq);
+	sx127x_modem_config(dev, dr.sf, dr.bw, chan.cr, LORAWAN_SYNC_WORD);
+
+	printf("CHAN:%2u DR:%2u (SF:%2u BW:%2u CR:%2u FRF:%ld)\r\n",
+			chan_num, dr_num, dr.sf, dr.bw, chan.cr, chan.freq);
+
+	return 0;
+}
+
 int sx127x_setup(sx127x_t *dev) {
 	RegOpMode_t opmode;
 	RegDioMapping1_t diomap;
 
 	dev->errmsg = "No error";
+	dev->rx_done = false;
+	dev->count_packets_rx = 0;
+	dev->count_errors_rx = 0;
 
 	sx127x_reset(dev);
 
@@ -256,13 +294,9 @@ int sx127x_setup(sx127x_t *dev) {
 	sx127x_writereg(dev, RegFifoTxBaseAddr, 64);
 	sx127x_writereg(dev, RegFifoAddrPtr, 0);
 
-	//sx127x_modem_config(dev);
-	
 	diomap.reg = sx127x_readreg(dev, RegDioMapping1);
 	diomap.bit.Dio0Mapping = 0; // RxDone interrupt
 	sx127x_writereg(dev, RegDioMapping1, diomap.reg);
-
-	//sx127x_writereg(dev, RegSyncWord, 0x34); // LoRaWAN sync word
 
 	return 0;
 }
@@ -272,7 +306,13 @@ char *sx127x_get_error(sx127x_t *dev) {
 }
 
 void sx127x_interrupt(void *data) {
-	//sx127x_t *dev = (sx127x_t *)data;
+	sx127x_t *dev = (sx127x_t *)data;
+	RegIrqFlags_t irqflags;
+
+	irqflags.reg = sx127x_readreg(dev, RegIrqFlags);
+	if(irqflags.bit.RxDone) {
+		dev->rx_done = true;
+	}
 }
 
 uint8_t sx127x_version(sx127x_t *dev) {
@@ -322,47 +362,64 @@ int sx127x_transmit(sx127x_t *dev, uint8_t *buf, size_t len) {
 	return 0;
 }
 
-int sx127x_receive(sx127x_t *dev, uint8_t *buf, size_t len) {
+int sx127x_receive(sx127x_t *dev, uint8_t *buf, size_t len, uint32_t timeout_ms) {
 	RegOpMode_t opmode;
 	RegIrqFlags_t irqflags;
+	uint32_t now;
 	size_t rxlen;
 	int err = 0;
 	int i;
 
-	sx127x_writereg(dev, RegFifoAddrPtr, sx127x_readreg(dev, RegFifoRxBaseAddr));
-
 	opmode.reg = sx127x_readreg(dev, RegOpMode);
-	opmode.bit.Mode = MODE_RXSINGLE;
-	sx127x_writereg(dev, RegOpMode, opmode.reg);
+	if(opmode.bit.Mode != MODE_RXSINGLE) {
+		opmode.bit.Mode = MODE_RXSINGLE;
+		sx127x_writereg(dev, RegOpMode, opmode.reg);
+		sx127x_writereg(dev, RegFifoAddrPtr, sx127x_readreg(dev, RegFifoRxBaseAddr));
+	}
 
 	// Wait for RxDone
-	do {
-		irqflags.reg = sx127x_readreg(dev, RegIrqFlags);
-		//platform_delay(1);
-	}while(!(irqflags.bit.RxDone | irqflags.bit.RxTimeout));
+	now = platform_ticks();
+	while(!dev->rx_done && (platform_ticks() < (now + timeout_ms))) {
+		__WFI();
+	}
+
+	if(!dev->rx_done) {
+		dev->errmsg = "RX interrupt timeout";
+		err = -1;
+		goto rxend;
+	}
+
+	dev->rx_done = false;
+
+	irqflags.reg = sx127x_readreg(dev, RegIrqFlags);
 
 	if(irqflags.bit.RxTimeout) {
-		dev->errmsg = "RX Timeout";
+		dev->errmsg = "RF RX timeout";
 		err = -1;
-		goto rxerr;
+		goto rxend;
 	}
 
 	if(irqflags.bit.PayloadCrcError) {
 		dev->errmsg = "RX Payload CRC Error";
-		err = -2;
+		err = -3;
 		goto rxerr;
 	}
 
 	if(!irqflags.bit.ValidHeader) {
 		dev->errmsg = "RX Invalid Header";
-		err = -3;
+		err = -4;
 		goto rxerr;
 	}
 
 	rxlen = sx127x_readreg(dev, RegRxNbBytes);
 	if(rxlen > len) {
 		dev->errmsg = "Received packet larger than buffer";
-		err = -4;
+		err = -5;
+		goto rxerr;
+	}
+	if(rxlen == 0) {
+		dev->errmsg = "Received empty packet";
+		err = -6;
 		goto rxerr;
 	}
 
@@ -371,12 +428,26 @@ int sx127x_receive(sx127x_t *dev, uint8_t *buf, size_t len) {
 		buf[i] = sx127x_readreg(dev, RegFifo);
 	}
 	err = rxlen;
+	dev->count_packets_rx++;
+
+	printf("SNR: %u RSSI: %d\r\n",
+			sx127x_readreg(dev, RegPktSnrValue),
+			((int)sx127x_readreg(dev, RegPktRssiValue) - 157));
+
+	goto rxend;
 
 rxerr:
+	dev->count_errors_rx++;
+
+rxend:
 	// Clear all IRQ flags
 	sx127x_writereg(dev, RegIrqFlags, 0xFF);
 
-	opmode.bit.Mode = MODE_SLEEP;
-	sx127x_writereg(dev, RegOpMode, opmode.reg);
+	// Go to sleep unless we're in an async receive waiting for RxDone interrupt
+	if(timeout_ms != 0) {
+		opmode.bit.Mode = MODE_SLEEP;
+		sx127x_writereg(dev, RegOpMode, opmode.reg);
+	}
+
 	return err;
 }
