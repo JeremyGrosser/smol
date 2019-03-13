@@ -15,12 +15,16 @@ int eeprom_page_read(eeprom_t *dev, eeprom_page_t *page) {
 	size_t len;
 
 	len = (dev->page_size + sizeof(page->address));
-	bytes = i2c_read(dev->i2c, dev->address, (uint8_t *)page, len);
 
-	if((size_t)bytes == page->len) {
+	if(i2c_start(dev->i2c, ((dev->address << 1) | 1)) != 0) {
+		return 0;
+	}
+	bytes = i2c_read(dev->i2c, dev->address, (uint8_t *)page, len, true);
+
+	if(bytes == len) {
 		return 0;
 	}else{
-		return (int)bytes;
+		return bytes;
 	}
 }
 
@@ -29,9 +33,13 @@ int eeprom_page_write(eeprom_t *dev, eeprom_page_t *page) {
 	size_t len;
 
 	len = (dev->page_size + sizeof(page->address));
-	bytes = i2c_write(dev->i2c, dev->address, (uint8_t *)page, len);
 
-	if((size_t)bytes == len) {
+	if(i2c_start(dev->i2c, (dev->address << 1)) != 0) {
+		return 0;
+	}
+	bytes = i2c_write(dev->i2c, dev->address, (uint8_t *)page, len, true);
+
+	if(bytes == len) {
 		return 0;
 	}else{
 		return bytes;

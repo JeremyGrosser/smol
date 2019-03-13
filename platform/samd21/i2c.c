@@ -92,20 +92,35 @@ void i2c_setup(i2c_t *i2c) {
 	while(i2c->sercom->SYNCBUSY.bit.SYSOP);
 }
 
-size_t i2c_read(i2c_t *i2c, uint8_t address, uint8_t *buf, size_t len) {
-	size_t i = 0;
-
+int i2c_start(i2c_t *i2c, uint8_t address) {
 	while(i2c->sercom->SYNCBUSY.reg);
 
-	i2c->sercom->CTRLB.bit.ACKACT = 0; // ACK
-	i2c->sercom->ADDR.bit.ADDR = SERCOM_I2CM_ADDR_ADDR((address << 1) | 1);
- 	while(!i2c->sercom->INTFLAG.bit.MB);
+	do {
+		i2c->sercom->CTRLB.bit.ACKACT = 0; // ACK
+		i2c->sercom->ADDR.bit.ADDR = SERCOM_I2CM_ADDR_ADDR(address);
+		while(!i2c->sercom->INTFLAG.bit.MB);
 
-	i2c->sercom->INTFLAG.reg |= SERCOM_I2CM_INTFLAG_MB;
-	if(i2c->sercom->STATUS.bit.ARBLOST) {
-		return 0;
-	}
-	if(i2c->sercom->STATUS.bit.RXNACK) {
+		i2c->sercom->INTFLAG.reg |= SERCOM_I2CM_INTFLAG_MB;
+		if(i2c->sercom->STATUS.bit.ARBLOST) {
+			return 1;
+		}
+	}while(i2c->sercom->STATUS.bit.RXNACK);
+
+	return 0;
+}
+
+void i2c_stop(i2c_t *i2c) {
+	while(i2c->sercom->SYNCBUSY.reg);
+	i2c->sercom->CTRLB.bit.ACKACT = 1;
+	i2c->sercom->CTRLB.bit.CMD = 3;
+	i2c->sercom->DATA.reg = 0;
+	while(i2c->sercom->INTFLAG.bit.SB);
+}
+
+size_t i2c_read(i2c_t *i2c, uint8_t address, uint8_t *buf, size_t len, bool stop) {
+	size_t i = 0;
+
+	if(i2c_start(i2c, (address | 1)) != 0) {
 		return 0;
 	}
 
@@ -116,7 +131,7 @@ size_t i2c_read(i2c_t *i2c, uint8_t address, uint8_t *buf, size_t len) {
 
 		while(i2c->sercom->SYNCBUSY.reg);
 
-		if(i == (len - 1)) {
+		if(i == (len - 1) && stop) {
 			// last byte, issue NACK/STOP
 			i2c->sercom->CTRLB.bit.ACKACT = 1;
 			i2c->sercom->CTRLB.bit.CMD = 3;
@@ -131,19 +146,12 @@ size_t i2c_read(i2c_t *i2c, uint8_t address, uint8_t *buf, size_t len) {
 	return i;
 }
 
-size_t i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
+size_t i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len, bool stop) {
 	size_t i;
+
 	while(i2c->sercom->SYNCBUSY.reg);
 
-	i2c->sercom->CTRLB.bit.ACKACT = 0; // ACK
-	i2c->sercom->ADDR.bit.ADDR = SERCOM_I2CM_ADDR_ADDR((address << 1));
- 	while(!i2c->sercom->INTFLAG.bit.MB);
-
-	i2c->sercom->INTFLAG.reg |= SERCOM_I2CM_INTFLAG_MB;
-	if(i2c->sercom->STATUS.bit.ARBLOST) {
-		return 0;
-	}
-	if(i2c->sercom->STATUS.bit.RXNACK) {
+	if(i2c_start(i2c, address) != 0) {
 		return 0;
 	}
 
@@ -154,7 +162,7 @@ size_t i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
 
 		while(i2c->sercom->SYNCBUSY.reg);
 
-		if(i == (len - 1)) {
+		if(i == (len - 1) && stop) {
 			// last byte, issue NACK/STOP
 			i2c->sercom->CTRLB.bit.ACKACT = 1;
 			i2c->sercom->CTRLB.bit.CMD = 3;

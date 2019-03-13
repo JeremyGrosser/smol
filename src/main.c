@@ -12,15 +12,14 @@
 int main(void) {
 	eeprom_page_t page;
 
-	int err;
 	int len;
+	int err;
 
 	err = board_init();
 	if(err != 0) {
 		return 1;
 	}
 
-	/*
 	page.address = 0x0000;
 	page.data = malloc(EEPROM.page_size);
 	if(page.data == NULL) {
@@ -32,18 +31,19 @@ int main(void) {
 
 	err = eeprom_page_write(&EEPROM, &page);
 	if(err != 0) {
-		printf("eeprom: write page failed\r\n");
+		printf("eeprom: write page failed: %d\r\n", err);
 	}
 
+	memset((void *)page.data, 0xAA, EEPROM.page_size);
 	err = eeprom_page_read(&EEPROM, &page);
-	if(err != 0) {
-		printf("eeprom: read page failed\r\n");
+	if(err != 0) { 
+		printf("eeprom: read page failed: %d\r\n", err);
 	}else{
 		hexdump(page.data, EEPROM.page_size);
 	}
-	*/
 
 	printf("sx127x: version 0x%02X\r\n", sx127x_version(&RFM));
+	while(1);
 
 	/*
 	usb_open(&USBDEV);

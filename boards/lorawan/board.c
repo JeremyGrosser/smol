@@ -74,7 +74,7 @@ i2c_t I2C = {
 /* AT24C32 */
 eeprom_t EEPROM = {
 	.i2c = &I2C,
-	.address = 0x50, // low 3 bits correspond to A0,A1,A2 jumpers
+	.address = 0xA0,
 	.page_size = 32,
 	.num_pages = 128,
 };
