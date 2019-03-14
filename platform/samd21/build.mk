@@ -6,7 +6,7 @@ LD := $(CC)
 OBJCOPY := $(TRIPLET)-objcopy
 OBJDUMP := $(TRIPLET)-objdump
 
-CFLAGS += -march=armv6-m \
+CFLAGS += -mcpu=cortex-m0plus \
           -I$(LOCAL_DIR)
 LDFLAGS += --specs=nosys.specs \
            --specs=nano.specs
