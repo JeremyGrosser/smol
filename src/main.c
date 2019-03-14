@@ -9,6 +9,16 @@
 
 #include <lorawan_channels_us915.h>
 
+#ifndef RFM
+sx127x_t RFM;
+#endif
+
+#ifndef LED_ON
+#define LED_ON 1
+#define LED_OFF 0
+gpio_t LED;
+#endif
+
 int main(void) {
 
 	int len;

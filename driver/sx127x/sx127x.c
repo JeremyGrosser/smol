@@ -136,7 +136,7 @@ int sx127x_receive(sx127x_t *dev, uint8_t *buf, size_t len, uint32_t timeout_ms)
 	// Wait for RxDone
 	now = platform_ticks();
 	while(!dev->rx_done && (platform_ticks() < (now + timeout_ms))) {
-		__WFI();
+		platform_wait();
 	}
 
 	if(!dev->rx_done) {

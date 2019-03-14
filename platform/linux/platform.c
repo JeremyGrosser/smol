@@ -14,3 +14,7 @@ void platform_delay(uint32_t ms) {
 	req.tv_nsec = ((ms % 1000) * 1000);
 	nanosleep(&req, NULL);
 }
+
+void platform_wait(void) {
+	// TODO: sigwait
+}

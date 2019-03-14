@@ -30,5 +30,9 @@ void platform_delay(uint32_t ms) {
 	}
 }
 
+void platform_wait(void) {
+	__WFI();
+}
+
 void HardFault_Handler(void) {
 }
