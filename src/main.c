@@ -10,7 +10,6 @@
 #include <lorawan_channels_us915.h>
 
 int main(void) {
-	eeprom_page_t page;
 
 	int len;
 	int err;
@@ -20,6 +19,8 @@ int main(void) {
 		return 1;
 	}
 
+	/*
+	eeprom_page_t page;
 	page.address = 0x0000;
 	page.data = malloc(EEPROM.page_size);
 	if(page.data == NULL) {
@@ -41,9 +42,9 @@ int main(void) {
 	}else{
 		hexdump(page.data, EEPROM.page_size);
 	}
+	*/
 
 	printf("sx127x: version 0x%02X\r\n", sx127x_version(&RFM));
-	while(1);
 
 	/*
 	usb_open(&USBDEV);
