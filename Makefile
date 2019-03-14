@@ -6,8 +6,7 @@ MAKEFLAGS += -j$(CPUS)
 BOARD ?= lorawan
 TARGET ?= smol-$(BOARD)
 
-CFLAGS := -O0 -g -Wall -std=c11 -ffreestanding
-#CFLAGS := -O2 -Wall -std=c11 -ffreestanding
+CFLAGS := -Os -Wall -std=c11 -ffreestanding -flto -g
 
 SRCS :=
 
