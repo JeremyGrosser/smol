@@ -15,6 +15,10 @@ OBJS := $(addprefix $(BUILDDIR)/,$(OBJS))
 	@echo "    LD $@"
 	@$(LD) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
+%.a: $(OBJS)
+	@echo "    AR $@"
+	@$(AR) rcs $@ $^
+
 %.bin: %.elf
 	@echo "   BIN $@"
 	@$(OBJCOPY) $< -O binary $@
@@ -34,4 +38,4 @@ $(OBJS): $(BUILDDIR)/%.o: %
 
 clean:
 	@echo " CLEAN $(TARGET)"
-	@rm -rf $(BUILDDIR) $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).map $(TARGET).lst
+	@rm -rf $(BUILDDIR) $(TARGET).a $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).map $(TARGET).lst

@@ -6,11 +6,11 @@ MAKEFLAGS += -j$(CPUS)
 BOARD ?= lorawan
 TARGET ?= smol-$(BOARD)
 
-CFLAGS := -Os -Wall -std=c11 -ffreestanding -flto -g
+CFLAGS := $(CFLAGS) -Os -Wall -std=c11 -ffreestanding -flto -g
 
 SRCS :=
 
-all: $(TARGET).elf $(TARGET).hex $(TARGET).bin $(TARGET).lst
+all: $(TARGET).a $(TARGET).elf $(TARGET).hex $(TARGET).bin $(TARGET).lst
 
 include make/macros.mk
 include boards/$(BOARD)/build.mk
