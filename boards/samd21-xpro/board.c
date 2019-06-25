@@ -44,6 +44,42 @@ uart_t CONSOLE_UART = {
 	.baud	= 115200,
 };
 
+gpio_t MAX7219_CS = {
+    .num    = PIN_PB00,
+    .config = {
+        .direction = DIR_OUT,
+        .drive = DRIVE_LOW,
+        .pull = PULL_DISABLE,
+        .pmux = PMUX_DISABLE,
+    },
+};
+
+gpio_t MAX7219_CLK = {
+    .num    = PIN_PB01,
+    .config = {
+        .direction = DIR_OUT,
+        .drive = DRIVE_LOW,
+        .pull = PULL_DISABLE,
+        .pmux = PMUX_DISABLE,
+    },
+};
+
+gpio_t MAX7219_DIN = {
+    .num    = PIN_PB02,
+    .config = {
+        .direction = DIR_OUT,
+        .drive = DRIVE_LOW,
+        .pull = PULL_DISABLE,
+        .pmux = PMUX_DISABLE,
+    },
+};
+
+max7219_t MAX7219 = {
+    .cs = &MAX7219_CS,
+    .clk = &MAX7219_CLK,
+    .din = &MAX7219_DIN,
+};
+
 int board_init() {
 	platform_init();
 	uart_setup(&CONSOLE_UART);
@@ -51,6 +87,8 @@ int board_init() {
 	// ANSI clear sequence
 	printf("\033[2J\033[0;0H");
 	printf("\r\nboard_init\r\n");
+
+    max7219_setup(&MAX7219);
 
 	return 0;
 }

@@ -2,6 +2,8 @@
 #include <platform.h>
 #include <platform/gpio.h>
 
+#include <stdio.h>
+
 int max7219_setup(max7219_t *dev) {
     gpio_setup(dev->cs);
     gpio_setup(dev->clk);
@@ -17,13 +19,13 @@ int max7219_setup(max7219_t *dev) {
 static void max7219_writebyte(max7219_t *dev, uint8_t byte) {
     int i;
 
-    for(i = 0; i < 8; i++) {
-        gpio_write(dev->clk, 1);
-        platform_delay(1);                          // tCH = 50ns
-        gpio_write(dev->din, ((byte >> i) & 1));
-        platform_delay(1);                          // tDS = 25ns
+    for(i = 7; i >= 0; i--) {
         gpio_write(dev->clk, 0);
-        platform_delay(1);                          // tCL = 50ns
+        //platform_delay(1);                          // tCH = 50ns
+        gpio_write(dev->din, ((byte >> i) & 1));
+        //platform_delay(1);                          // tDS = 25ns
+        gpio_write(dev->clk, 1);
+        //platform_delay(1);                          // tCL = 50ns
     }
 }
 
@@ -39,24 +41,29 @@ int max7219_set_reg(max7219_t *dev, enum max7219_reg reg, uint8_t *val, size_t l
         len--;
     }
     gpio_write(dev->cs, 1);
-    platform_delay(1);  // tCSW = 50ns
+    //platform_delay(1);  // tCSW = 50ns
 
     return 0;
 }
 
 int max7219_write(max7219_t *dev, uint8_t *seg, size_t len) {
+    uint8_t i;
+
     if(len <= 0 || len > 8) {
         return 1;
     }
 
     gpio_write(dev->cs, 0);
-    while(len > 0) {
-        max7219_writebyte(dev, (uint8_t)len);
-        max7219_writebyte(dev, seg[len-1]);
-        len--;
+    //platform_delay(1); // tCSS = 25ns
+
+    for(i = 0; i < len; i++) {
+        max7219_writebyte(dev, i);
+        max7219_writebyte(dev, seg[i]);
     }
+
+    //platform_delay(0);  // tCSH = 0ns
     gpio_write(dev->cs, 1);
-    platform_delay(1);  // tCSW = 50ns
+    //platform_delay(1);  // tCSW = 50ns
 
     return 0;
 }

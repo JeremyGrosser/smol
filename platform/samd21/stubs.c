@@ -25,7 +25,6 @@ void *_sbrk(int nbytes) {
 	return prev_heap;
 }
 
-#if defined(console_write)
 int _write(int __fd, const void *__buf, size_t __nbyte) {
 	if(__fd == STDOUT_FILENO || __fd == STDERR_FILENO) {
 		console_write((uint8_t *)__buf, (size_t)__nbyte);
@@ -35,7 +34,6 @@ int _write(int __fd, const void *__buf, size_t __nbyte) {
 		return -1;
 	}
 }
-#endif
 
 /*
 int _isatty(int file) {
