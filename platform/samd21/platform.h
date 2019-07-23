@@ -65,6 +65,12 @@ struct gpio_s {
     uint32_t mask;
 };
 
+struct timer_s {
+    uint32_t num;
+
+    Tcc *tcc;
+};
+
 struct spi_s {
 	uint32_t num;
 

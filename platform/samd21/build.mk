@@ -15,6 +15,7 @@ CMSIS := $(TOPDIR)/third_party/CMSIS
 
 SRCS += $(LOCAL_DIR)/platform.c \
         $(LOCAL_DIR)/gpio.c \
+        $(LOCAL_DIR)/timer.c \
         $(LOCAL_DIR)/spi.c \
         $(LOCAL_DIR)/i2c.c \
         $(LOCAL_DIR)/uart.c \
