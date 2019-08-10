@@ -4,9 +4,9 @@
 static uint32_t ticks = 0;
 
 void platform_init(void) {
-	SystemInit();
-	SystemCoreClockUpdate();
-	
+    SystemInit();
+    SystemCoreClockUpdate();
+    
     // enable 32KHz crystal
     NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Synth;
     NRF_CLOCK->TASKS_LFCLKSTART = 1;
@@ -19,17 +19,17 @@ void platform_init(void) {
     NRF_RTC0->TASKS_START = 1;
     NVIC_EnableIRQ(RTC0_IRQn);
 
-	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 }
 
 
 uint32_t platform_ticks(void) {
-	return ticks;
+    return ticks;
 }
 
 void platform_delay(uint32_t ms) {
-	uint32_t until = ticks + ms;
-	while(ticks < until) {
+    uint32_t until = ticks + ms;
+    while(ticks < until) {
         __WFI();
     }
 }

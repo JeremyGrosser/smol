@@ -4,12 +4,12 @@
 
 int main(void) {
     uint8_t ch;
-	int err;
+    int err;
 
-	err = board_init();
-	if(err != 0) {
-		return 1;
-	}
+    err = board_init();
+    if(err != 0) {
+        return 1;
+    }
 
     gpio_t LED_ROW1 = {
         .num = 13,
@@ -37,7 +37,7 @@ int main(void) {
 
     printf("\r\n\r\nsmol microbit ready\r\n");
 
-	while(1) {
+    while(1) {
         if(uart_read(&CONSOLE, &ch, 1) > 0) {
             if(ch == '\r') {
                 uart_putc(&CONSOLE, ch);
@@ -49,7 +49,7 @@ int main(void) {
         platform_delay(100);
         gpio_toggle(&LED_COL1);
         __WFI();
-	}
+    }
 
-	return 0;
+    return 0;
 }

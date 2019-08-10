@@ -23,8 +23,8 @@ int uart_setup(uart_t *uart) {
         return -1;
     }
 
-	gpio_setup(uart->rxd);
-	gpio_setup(uart->txd);
+    gpio_setup(uart->rxd);
+    gpio_setup(uart->txd);
     gpio_write(uart->txd, 1);
 
     uart->pdev = NRF_UART0;
@@ -64,14 +64,14 @@ int uart_setup(uart_t *uart) {
     uart->pdev->PSELRXD = uart->rxd->num;
     uart->pdev->PSELTXD = uart->txd->num;
 
-	gpio_setup(uart->rxd);
-	gpio_setup(uart->txd);
+    gpio_setup(uart->rxd);
+    gpio_setup(uart->txd);
     gpio_write(uart->txd, 1);
 
     NVIC_EnableIRQ(UART0_IRQn);
 
     uart->pdev->TASKS_STARTRX = 1;
-	return 0;
+    return 0;
 }
 
 void uart_putc(uart_t *uart, uint8_t c) {

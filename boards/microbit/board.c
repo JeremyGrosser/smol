@@ -32,9 +32,9 @@ uart_t CONSOLE = {
 };
 
 int board_init() {
-	platform_init();
+    platform_init();
     uart_setup(&CONSOLE);
-	return 0;
+    return 0;
 }
 
 void console_write(uint8_t *msg, size_t len) {
