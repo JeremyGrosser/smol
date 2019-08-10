@@ -45,9 +45,10 @@ int main(void) {
             }
             uart_putc(&CONSOLE, ch);
         }
+        uart_putc(&CONSOLE, '.');
+        platform_delay(100);
+        gpio_toggle(&LED_COL1);
         __WFI();
-        //platform_delay(100);
-        //platform_delay(100);
 	}
 
 	return 0;
