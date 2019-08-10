@@ -12,6 +12,7 @@ int uart_setup(uart_t *uart) {
     gpio_write(uart->txd, 1);
 
     uart->pdev = NRF_UART0;
+    uart->pdev->POWER = (UART_POWER_POWER_Enabled << UART_POWER_POWER_Pos);
     uart->pdev->ENABLE = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
 
     /* nRF51 RM v3.0, page 156, Table 287: BAUDRATE */
@@ -40,15 +41,16 @@ int uart_setup(uart_t *uart) {
     uart->pdev->CONFIG = (UART_CONFIG_PARITY_Excluded << UART_CONFIG_PARITY_Pos) | \
                          (UART_CONFIG_HWFC_Disabled << UART_CONFIG_HWFC_Pos);
 
-
     uart->pdev->INTENCLR = 0xFFFFFFFF;
     uart->pdev->INTENSET = (UART_INTENSET_RXDRDY_Enabled << UART_INTENSET_RXDRDY_Pos);
     uart->pdev->EVENTS_RXDRDY = 0;
 
-    uart->pdev->PSELRXD = uart->rxd->mask;
-    uart->pdev->PSELTXD = uart->txd->mask;
-    uart->pdev->PSELRTS = 0xFFFFFFFF;
-    uart->pdev->PSELCTS = 0xFFFFFFFF;
+    uart->pdev->PSELRXD = uart->rxd->num;
+    uart->pdev->PSELTXD = uart->txd->num;
+
+	gpio_setup(uart->rxd);
+	gpio_setup(uart->txd);
+    gpio_write(uart->txd, 1);
 
     NVIC_EnableIRQ(UART0_IRQn);
 

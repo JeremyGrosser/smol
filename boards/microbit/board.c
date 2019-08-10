@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-static gpio_t CONSOLE_RXD = {
-    .num = 2,
+gpio_t CONSOLE_RXD = {
+    .num = 25,
     .config = {
         .direction = DIR_IN,
         .drive = DRIVE_LOW,
@@ -15,8 +15,8 @@ static gpio_t CONSOLE_RXD = {
     },
 };
 
-static gpio_t CONSOLE_TXD = {
-    .num = 1,
+gpio_t CONSOLE_TXD = {
+    .num = 24,
     .config = {
         .direction = DIR_OUT,
         .drive = DRIVE_LOW,
@@ -28,7 +28,7 @@ uart_t CONSOLE = {
     .num = 0,
     .txd = &CONSOLE_TXD,
     .rxd = &CONSOLE_RXD,
-    .baud = 9600,
+    .baud = 115200,
 };
 
 int board_init() {
