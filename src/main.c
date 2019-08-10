@@ -1,10 +1,6 @@
 #include <platform/gpio.h>
 #include <board.h>
 
-#include <string.h>
-
-static timer_t TCC2;
-
 int main(void) {
 	int err;
 
@@ -16,8 +12,6 @@ int main(void) {
     LED.config.pmux = PMUX_ENABLE;
     LED.config.pmux_function = MUX_PA17E_TCC2_WO1;
 	gpio_setup(&LED);
-
-    timer_setup(&TCC2);
 
 	while(1) {
 	}
