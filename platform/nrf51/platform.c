@@ -20,6 +20,9 @@ void platform_init(void) {
     NVIC_EnableIRQ(RTC0_IRQn);
 
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+    // prefer lower power over constant latency
+    NRF_POWER->TASKS_LOWPWR = 1;
 }
 
 
