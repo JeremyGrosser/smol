@@ -22,11 +22,9 @@ void gpio_setup(gpio_t *gpio) {
 	if(gpio->config.direction == DIR_OUT) {
         pincnf |= (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos) | \
                   (GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos);
-        NRF_GPIO->DIRSET |= gpio->mask;
 	}else{
         pincnf |= (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) | \
                   (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos);
-        NRF_GPIO->DIRCLR |= gpio->mask;
 	}
 
 	switch(gpio->config.pull) {
