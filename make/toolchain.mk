@@ -9,6 +9,7 @@ CFLAGS += -I$(TOPDIR)/include \
 
 OBJS := $(SRCS:%.c=%.c.o)
 OBJS := $(OBJS:%.s=%.s.o)
+OBJS := $(OBJS:%.S=%.s.o)
 OBJS := $(addprefix $(BUILDDIR)/,$(OBJS))
 
 %.elf: $(OBJS)
