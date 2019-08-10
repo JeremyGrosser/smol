@@ -37,6 +37,10 @@ int board_init() {
     return 0;
 }
 
+int console_read(uint8_t *msg, size_t len) {
+    return uart_read(&CONSOLE, msg, len);
+}
+
 void console_write(uint8_t *msg, size_t len) {
     uart_write(&CONSOLE, msg, len);
 }

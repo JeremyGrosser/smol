@@ -1,6 +1,7 @@
 #include <platform/gpio.h>
 #include <board.h>
 #include <stdio.h>
+#include <unistd.h>
 
 int main(void) {
     uint8_t ch;
@@ -38,14 +39,15 @@ int main(void) {
     printf("\r\n\r\nsmol microbit ready\r\n");
 
     while(1) {
-        if(uart_read(&CONSOLE, &ch, 1) > 0) {
+        if(read(STDIN_FILENO, &ch, 1) > 0) {
             if(ch == '\r') {
-                uart_putc(&CONSOLE, ch);
+                write(STDOUT_FILENO, &ch, 1);
                 ch = '\n';
             }
-            uart_putc(&CONSOLE, ch);
+            write(STDOUT_FILENO, &ch, 1);
         }
-        uart_putc(&CONSOLE, '.');
+        ch = '.';
+        write(STDOUT_FILENO, &ch, 1);
         platform_delay(100);
         gpio_toggle(&LED_COL1);
         __WFI();

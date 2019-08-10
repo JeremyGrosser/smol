@@ -32,6 +32,15 @@ int _write(int __fd, const void *__buf, size_t __nbyte) {
     }
 }
 
+int _read(int __fd, void *__buf, size_t __nbyte) {
+    if(__fd == STDIN_FILENO) {
+        return console_read((uint8_t *)__buf, (size_t)__nbyte);
+    }else{
+        errno = EBADF;
+        return -1;
+    }
+}
+
 int _isatty(int file) {
     if(file <= STDERR_FILENO) {
         return 1;

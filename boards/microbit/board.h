@@ -16,6 +16,7 @@ extern gpio_t CONSOLE_RXD, CONSOLE_TXD;
 extern uart_t CONSOLE;
 
 int board_init();
+int console_read(uint8_t *msg, size_t len);
 void console_write(uint8_t *msg, size_t len);
 
 #endif
