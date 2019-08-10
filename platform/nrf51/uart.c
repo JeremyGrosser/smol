@@ -78,9 +78,14 @@ uint8_t uart_getc(uart_t *uart) {
 void uart_write(uart_t *uart, uint8_t *msg, size_t len) {
     size_t i;
 
+    uart->pdev->TASKS_STARTTX = 1;
     for(i = 0; i < len; i++) {
-        uart_putc(uart, msg[i]);
+        uart->pdev->TXD = msg[i];
+        while(!uart->pdev->EVENTS_TXDRDY);
+        uart->pdev->EVENTS_TXDRDY = 0;
     }
+    uart->pdev->TASKS_STOPTX = 1;
+    uart->pdev->EVENTS_TXDRDY = 0;
 }
 
 int uart_read(uart_t *uart, uint8_t *msg, size_t len) {
