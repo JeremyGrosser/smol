@@ -2,6 +2,22 @@
 #include <platform/gpio.h>
 #include <platform.h>
 
+#define RXBUF_SIZE 16
+static uint8_t rxbuf[RXBUF_SIZE] = {0};
+static size_t rxbuf_head = 0;
+static size_t rxbuf_tail = 0;
+static size_t rxbuf_avail = 0;
+
+static void rxbuf_append(uint8_t ch) {
+    rxbuf[rxbuf_tail] = ch;
+    rxbuf_tail = ((rxbuf_tail + 1) % RXBUF_SIZE);
+    rxbuf_avail++;
+    if(rxbuf_avail > RXBUF_SIZE) {
+        rxbuf_head = ((rxbuf_head + 1) % RXBUF_SIZE);
+        rxbuf_avail--;
+    }
+}
+
 int uart_setup(uart_t *uart) {
     if(uart->num != 0) {
         return -1;
@@ -67,11 +83,11 @@ void uart_putc(uart_t *uart, uint8_t c) {
 }
 
 uint8_t uart_getc(uart_t *uart) {
-    if(uart->pdev->EVENTS_RXDRDY != 1) {
-        return 0;
+    uint8_t ch;
+    if(uart_read(uart, &ch, 1) > 0) {
+        return ch;
     }else{
-        uart->pdev->EVENTS_RXDRDY = 0;
-        return uart->pdev->RXD;
+        return 0;
     }
 }
 
@@ -89,15 +105,24 @@ void uart_write(uart_t *uart, uint8_t *msg, size_t len) {
 }
 
 int uart_read(uart_t *uart, uint8_t *msg, size_t len) {
-    return -1;
+    size_t i;
+
+    for(i = 0; i < len; i++) {
+        if(rxbuf_avail > 0) {
+            msg[i] = rxbuf[rxbuf_head];
+            rxbuf_head = (rxbuf_head + 1) % RXBUF_SIZE;
+            rxbuf_avail--;
+        }else{
+            break;
+        }
+    }
+
+    return i;
 }
 
-
 void UART0_IRQHandler(void) {
-    uint8_t ch;
     if(NRF_UART0->EVENTS_RXDRDY) {
-        ch = NRF_UART0->RXD;
-        ch++;
+        rxbuf_append(NRF_UART0->RXD);
         NRF_UART0->EVENTS_RXDRDY = 0;
     }
 }

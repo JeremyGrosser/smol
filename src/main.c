@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 int main(void) {
+    uint8_t ch;
 	int err;
 
 	err = board_init();
@@ -34,9 +35,16 @@ int main(void) {
     gpio_write(&LED_ROW1, 1);
     gpio_write(&LED_COL1, 0);
 
-    printf("smol microbit ready\r\n");
+    printf("\r\n\r\nsmol microbit ready\r\n");
 
 	while(1) {
+        if(uart_read(&CONSOLE, &ch, 1) > 0) {
+            if(ch == '\r') {
+                uart_putc(&CONSOLE, ch);
+                ch = '\n';
+            }
+            uart_putc(&CONSOLE, ch);
+        }
         __WFI();
         //platform_delay(100);
         //platform_delay(100);
