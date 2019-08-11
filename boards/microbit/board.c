@@ -21,5 +21,6 @@ gpio_t BUTTON_B = {
 int board_init() {
     platform_init();
     uart_setup(&CONSOLE);
+    i2c_setup(&I2C);
     return 0;
 }

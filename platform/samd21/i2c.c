@@ -118,8 +118,8 @@ int i2c_start(i2c_t *i2c, uint8_t address) {
 	return 0;
 }
 
-int i2c_read(i2c_t *i2c, uint8_t address) {
-	int err;
+int i2c_read(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
+	int i, err;
 
 	address = (address << 1) | 1;
 
@@ -129,8 +129,14 @@ int i2c_read(i2c_t *i2c, uint8_t address) {
 		return -1;
 	}
 
-	while(!i2c->sercom->INTFLAG.bit.SB);
-	return i2c->sercom->DATA.reg;
+    for(i = 0; i < len; i++) {
+        data[i] = i2c->sercom->DATA.reg;
+        if(i2c->sercom->INTFLAG.bit.SB) {
+            break;
+        }
+    }
+
+	return (int)i;
 }
 
 int i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
@@ -166,5 +172,5 @@ int i2c_write(i2c_t *i2c, uint8_t address, uint8_t *data, size_t len) {
 	}
 	*/
 
-	return 0;
+	return (int)i;
 }

@@ -4,7 +4,8 @@ CFLAGS += -DNRF51 \
 		  -I$(LOCAL_DIR)
 
 SRCS += $(LOCAL_DIR)/board.c \
-		$(LOCAL_DIR)/console.c
+		$(LOCAL_DIR)/console.c \
+		$(LOCAL_DIR)/i2c.c
 
 LDSCRIPT ?= $(TOPDIR)/third_party/nrfx/mdk/nrf51_xxaa.ld
 
