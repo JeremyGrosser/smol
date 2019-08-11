@@ -4,16 +4,6 @@
 
 #include <stddef.h>
 
-static exti_func_t exti_functions[1];
-static int exti_initialized = 0;
-
-static void exti_init(void) {
-    // TODO
-}
-
-static void exti_attach(exti_t *exti) {
-}
-
 void gpio_setup(gpio_t *gpio) {
     uint32_t pincnf = 0;
 
@@ -61,7 +51,6 @@ void gpio_setup(gpio_t *gpio) {
 
     if(gpio->interrupt.function != NULL) {
         pincnf |= (gpio->interrupt.sense << GPIO_PIN_CNF_SENSE_Pos) & GPIO_PIN_CNF_SENSE_Msk;
-        exti_attach(&gpio->interrupt);
     }
 
     NRF_GPIO->PIN_CNF[gpio->num] = pincnf;
