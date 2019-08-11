@@ -9,8 +9,8 @@ OBJDUMP := $(TRIPLET)-objdump
 CFLAGS += -mcpu=cortex-m0 \
 		  -mthumb \
           -I$(LOCAL_DIR)
-LDFLAGS += --specs=nosys.specs \
-           --specs=nano.specs
+LDFLAGS += --specs=nano.specs
+#           --specs=nosys.specs
 
 CMSIS := $(TOPDIR)/third_party/CMSIS
 

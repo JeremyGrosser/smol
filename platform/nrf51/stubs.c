@@ -1,9 +1,10 @@
 #include <board.h>
 
-#include <errno.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <errno.h>
 
 #undef errno
 extern int errno;
@@ -47,6 +48,20 @@ int _isatty(int file) {
     }else{
         return 0;
     }
+}
+
+int _close(int __filedes) {
+    return 0;
+}
+
+int _fstat(int __fd, struct stat *__sbuf) {
+    errno = EBADF;
+    return -1;
+}
+
+off_t _lseek(int __filedes, off_t __offset, int __whence) {
+    errno = EBADF;
+    return -1;
 }
 
 /*
