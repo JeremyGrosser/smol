@@ -17,7 +17,7 @@ static uint8_t i2c_baud(uint32_t baudrate) {
 	return SystemCoreClock / ( 2 * baudrate) - 5 - (((SystemCoreClock / 1000000) * I2C_RISE_TIME_NS) / (2 * 1000));
 }
 
-void i2c_setup(i2c_t *i2c) {
+int i2c_setup(i2c_t *i2c) {
 	Sercom *sercom;
 	sercom = (Sercom *)(((void *)SERCOM0) + (i2c->num * 0x400UL));
 	i2c->sercom = &sercom->I2CM;
@@ -91,6 +91,8 @@ void i2c_setup(i2c_t *i2c) {
 
 	i2c->sercom->STATUS.reg |= SERCOM_I2CM_STATUS_BUSSTATE(I2C_BUSSTATE_IDLE);
 	while(i2c->sercom->SYNCBUSY.bit.SYSOP);
+
+    return 0;
 }
 
 int i2c_start(i2c_t *i2c, uint8_t address) {

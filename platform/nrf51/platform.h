@@ -80,6 +80,7 @@ struct uart_s {
 
 struct i2c_s {
 	uint32_t num;
+    uint32_t freq_khz;
 
 	gpio_t *scl;
 	gpio_t *sda;

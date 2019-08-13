@@ -30,4 +30,5 @@ i2c_t I2C = {
     .num = 0,
     .scl = &SCL,
     .sda = &SDA,
+    .freq_khz = 100,
 };
